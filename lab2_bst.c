@@ -28,7 +28,7 @@ pthread_mutex_t lock; //이렇게하면 전역변수라 finegrain의 의미가 �
  */
 
 void inorder(lab2_tree *tree, lab2_node *C_Node){ //add inorder fuction
-    if (C_Node != NULL){ //C_node is not null
+    if (C_Node){ //C_node is not null
         inorder(tree, C_Node->left);
         inorder(tree, C_Node->right);
     }
@@ -462,8 +462,10 @@ int lab2_node_remove_cg(lab2_tree *tree, int key) {
  *  @param lab2_tree *tree  : bst which you want to delete. 
  *  @return                 : status(success or fail)
  */
-void lab2_tree_delete(lab2_tree *tree) { //delete tree fuction
+int lab2_tree_delete(lab2_tree *tree) { //delete tree fuction
     free(tree);
+    tree = NULL;
+    return LAB2_SUCCESS;
     // You need to implement lab2_tree_delete function.
 }
 
@@ -475,8 +477,10 @@ void lab2_tree_delete(lab2_tree *tree) { //delete tree fuction
  *  @param lab2_tree *tree  : bst node which you want to remove. 
  *  @return                 : status(success or fail)
  */
-void lab2_node_delete(lab2_node *node) { //delete node fuction
+int lab2_node_delete(lab2_node *node) { //delete node fuction
     free(node);
+    node = NULL;
+    return LAB2_SUCCESS;
     // You need to implement lab2_node_delete function.
 }
 
