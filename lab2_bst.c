@@ -18,7 +18,7 @@
 #include <string.h>
 
 #include "lab2_sync_types.h"
-pthread_mutex_t mutex; //이렇게하면 전역변수라 finegrain의 의미가 없음 그냥 거기 노드를 막는거
+pthread_mutex_t lock; //이렇게하면 전역변수라 finegrain의 의미가 없음 그냥 거기 노드를 막는거
 /*
  * TODO
  *  Implement funtction which traverse BST in in-order
@@ -28,7 +28,7 @@ pthread_mutex_t mutex; //이렇게하면 전역변수라 finegrain의 의미가 
  */
 
 void inorder(lab2_tree *tree, lab2_node *C_Node){ //add inorder fuction
-    if (C_Node){ //C_node is not null
+    if (C_Node != NULL){ //C_node is not null
         inorder(tree, C_Node->left);
         inorder(tree, C_Node->right);
     }
@@ -48,7 +48,7 @@ int lab2_node_print_inorder(lab2_tree *tree)
  * 
  *  @return                 : bst which you created in this function.
  */
-lab2_tree *lab2_tree_create(int key) {
+lab2_tree *lab2_tree_create() {
     lab2_tree *tree = (lab2_tree *)malloc(sizeof(lab2_tree)); //create tree by dynamic allocation
     tree->root = NULL;
     return tree;
@@ -130,7 +130,7 @@ int lab2_node_insert_fg(lab2_tree *tree, lab2_node *new_node){
             p = p->left;
         }
     }
-    pthread_mutex_lock(&mutex);
+    pthread_mutex_lock(&lock);
     if (!(tree->root)) { //if root is not exist
         (tree->root) = new_node; //new_node is be a root
     }
@@ -140,7 +140,7 @@ int lab2_node_insert_fg(lab2_tree *tree, lab2_node *new_node){
     else { //new_node > parent node
         q->right = new_node; //new_node be a right child
     }
-    pthread_mutex_unlock(&mutex);
+    pthread_mutex_unlock(&lock);
     return LAB2_SUCCESS;
     // You need to implement lab2_node_insert function.
 }
@@ -154,7 +154,7 @@ int lab2_node_insert_fg(lab2_tree *tree, lab2_node *new_node){
  *  @return                     : status (success or fail)
  */
 int lab2_node_insert_cg(lab2_tree *tree, lab2_node *new_node){
-    pthread_mutex_lock(&mutex);
+    pthread_mutex_lock(&lock);
     lab2_node *p = tree->root; //declare p
     lab2_node *q = NULL; //declare q
     while (p) { //To a node without child node
@@ -178,7 +178,7 @@ int lab2_node_insert_cg(lab2_tree *tree, lab2_node *new_node){
     else { //new_node > parent node
         q->right = new_node; //new_node be a right child
     }
-    pthread_mutex_unlock(&mutex);
+    pthread_mutex_unlock(&lock);
     return LAB2_SUCCESS;
     // You need to implement lab2_node_insert function.
 }
@@ -301,11 +301,11 @@ int lab2_node_remove_fg(lab2_tree *tree, int key) {
             p = p->right;
         }
     }
-    pthread_mutex_lock(&mutex); //do lock
+    pthread_mutex_lock(&lock); //do lock
     if ((p->left == NULL) && (p->right == NULL)){//does not exist child node
         if (p == tree->root){
             tree->root = NULL;
-            pthread_mutex_unlock(&mutex); //do unlock
+            pthread_mutex_unlock(&lock); //do unlock
             return LAB2_SUCCESS;
         }
         if (p == q->left)
@@ -357,7 +357,7 @@ int lab2_node_remove_fg(lab2_tree *tree, int key) {
             q->left = p->left;
         }
     }
-    pthread_mutex_unlock(&mutex); //do unlock
+    pthread_mutex_unlock(&lock); //do unlock
     return LAB2_SUCCESS;
     // You need to implement lab2_node_remove_fg function.
 }
@@ -372,7 +372,7 @@ int lab2_node_remove_fg(lab2_tree *tree, int key) {
  *  @return                 : status (success or fail)
  */
 int lab2_node_remove_cg(lab2_tree *tree, int key) {
-    pthread_mutex_lock(&mutex); //do lock
+    pthread_mutex_lock(&lock); //do lock
     lab2_node *p = tree->root;
     lab2_node *q = NULL;
     lab2_node *tmp;
@@ -448,7 +448,7 @@ int lab2_node_remove_cg(lab2_tree *tree, int key) {
             q->left = p->left;
         }
     }
-    pthread_mutex_unlock(&mutex); //do unlock
+    pthread_mutex_unlock(&lock); //do unlock
     return LAB2_SUCCESS;
     // You need to implement lab2_node_remove_cg function.
 }
