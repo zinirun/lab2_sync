@@ -18,7 +18,7 @@
 #include <string.h>
 
 #include "lab2_sync_types.h"
-pthread_mutex_t lock; //이렇게하면 전역변수라 finegrain의 의미가 없음 그냥 거기 노드를 막는거
+pthread_mutex_t lock = PTHREAD_MUTEX_INITIALIZER;
 /*
  * TODO
  *  Implement funtction which traverse BST in in-order
