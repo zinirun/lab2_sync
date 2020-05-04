@@ -1,8 +1,8 @@
 /*
 *	Operating System Lab
 *	    Lab2 (Synchronization)
-*	    Student id : 32160000, 32162436
-*	    Student name : 허전진, 신창
+*	    Student id : 
+*	    Student name : 
 *
 *   lab2_bst.c :
 *       - thread-safe bst code.
@@ -18,27 +18,23 @@
 #include <string.h>
 
 #include "lab2_sync_types.h"
+pthread_mutex_t Mutex = PTHREAD_MUTEX_INITIALIZER;
+
 /*
  * TODO
  *  Implement funtction which traverse BST in in-order
  *  
- *  @param lab2_tree *tree  : bst to print in-order.
+ *  @param lab2_tree *tree  : bst to print in-order. 
  *  @return                 : status (success or fail)
  */
-pthread_mutex_t mutex;
-
-void inorder(lab2_tree *tree, lab2_node *C_Node){ //add inorder fuction
-    if (C_Node != NULL){ //C_node is not null
-        inorder(tree, C_Node->left);
-        inorder(tree, C_Node->right);
-    }
+void inorder(lab2_node *node) {
+    if(!node) return;
+    inorder(node -> left);
+    inorder(node -> right);
 }
-
-int lab2_node_print_inorder(lab2_tree *tree)
-{
-    inorder(tree, tree->root);
-    return LAB2_SUCCESS; //LAB2_SUCCESS`s value is 0
-    // You need to implement lab2_node_print_inorder function.
+int lab2_node_print_inorder(lab2_tree * tree) {
+    inorder(tree -> root);
+    return LAB2_SUCCESS;
 }
 
 /*
@@ -49,10 +45,11 @@ int lab2_node_print_inorder(lab2_tree *tree)
  *  @return                 : bst which you created in this function.
  */
 lab2_tree *lab2_tree_create() {
-    lab2_tree *tree = (lab2_tree *)malloc(sizeof(lab2_tree)); //create tree by dynamic allocation
-    tree->root = NULL;
-    return tree;
     // You need to implement lab2_tree_create function.
+    lab2_tree *tree = (lab2_tree *) malloc(sizeof(lab2_tree));
+    tree -> root = NULL;
+    pthread_mutex_init(&tree->mutex, NULL);
+    return tree;
 }
 
 /*
@@ -64,10 +61,13 @@ lab2_tree *lab2_tree_create() {
  *  @return                 : bst node which you created in this function.
  */
 lab2_node * lab2_node_create(int key) {
-    lab2_node *node = (lab2_node *)malloc(sizeof(lab2_node)); //create node by dynamic allocation
-    node->key = key;
-    return node;
     // You need to implement lab2_node_create function.
+    lab2_node *node = (lab2_node *) malloc(sizeof(lab2_node));
+    node -> key = key;
+    node -> left = NULL;
+    node -> right = NULL;
+    pthread_mutex_init(&node->mutex, NULL);
+    return node;
 }
 
 /* 
@@ -78,34 +78,30 @@ lab2_node * lab2_node_create(int key) {
  *  @param lab2_node *new_node  : bst node which you need to insert. 
  *  @return                 : satus (success or fail)
  */
-int lab2_node_insert(lab2_tree *tree, lab2_node *new_node){
-    lab2_node *p= tree->root; //declare p
-    lab2_node *q= NULL; //declare q
-    while(p != NULL) { //To a node without child node
-        q = p;
-        if (new_node->key == (p->key)) {
-            return LAB2_ERROR;
+int lab2_node_insert(lab2_tree *tree, lab2_node *new_node) {
+    lab2_node *temp = tree -> root;
+    if(temp == NULL) {
+        tree -> root = new_node; // root가 NULL이면 새로운 노드를 root로 설정
+    } else {
+        while(1) {
+            if(temp -> key < new_node -> key) { // 비교 노드의 키값보다 추가할 노드의 키값이 클 때
+                if(!(temp -> right)) { // 비교노드의 오른쪽 자식이 NULL 일 때
+                    temp -> right =  new_node;
+                    break;
+                }
+                temp = temp -> right;
+            } else if(temp -> key > new_node -> key) { // 비교 노드의 키값보다 추가할 노드의 키값이 작을 때
+                if(!(temp -> left)) { // 비교노드의 왼쪽 자식이 NULL 일 때
+                    temp -> left = new_node;
+                    break;
+                }
+                temp = temp -> left;
+            } else {
+                break;
+            }
         }
-        else if (new_node->key > (p->key)) { //new_node > parent node, go to right child node
-            p = p->right;
-        }
-        else { //new_node < parent node, go to left child node
-            p = p->left;
-        }
     }
-
-    if((tree->root) == NULL) { //if root is not exist
-        (tree->root) = new_node; //new_node is be a root
-    }
-    else if (new_node->key < (q->key)) { //new_node < parent node
-        q->left = new_node; //new_node be a left child
-    }
-    else { //new_node > parent node
-        q->right = new_node; //new_node be a right child
-    }
-
     return LAB2_SUCCESS;
-    // You need to implement lab2_node_insert function.
 }
 
 /* 
@@ -117,33 +113,37 @@ int lab2_node_insert(lab2_tree *tree, lab2_node *new_node){
  *  @return                     : status (success or fail)
  */
 int lab2_node_insert_fg(lab2_tree *tree, lab2_node *new_node){
-    lab2_node *p= tree->root; //declare p
-    lab2_node *q= NULL; //declare q
-    while(p != NULL) { //To a node without child node
-        q = p;
-        if (new_node->key == (p->key)) {
-            return LAB2_ERROR;
+      // You need to implement lab2_node_insert_fg function.
+      lab2_node *temp = tree -> root;
+    if(temp == NULL) {
+        pthread_mutex_lock(&tree -> mutex);
+        tree -> root = new_node;
+        pthread_mutex_unlock(&tree -> mutex);
+    } else {
+	    
+        while(1){
+            if(temp -> key < new_node -> key) {
+                if(!(temp -> right)) {
+                    pthread_mutex_lock(&temp -> mutex);
+                    temp -> right =  new_node;
+                    pthread_mutex_unlock(&temp -> mutex);
+                    break;
+                }
+                temp = temp -> right;
+            }else if(temp -> key > new_node -> key) {
+                if(!(temp -> left)) {
+                    pthread_mutex_lock(&temp -> mutex);
+                    temp -> left = new_node;
+                    pthread_mutex_unlock(&temp -> mutex);
+                    break;
+                }
+                temp = temp -> left;
+            } else {
+                break;
+            }
         }
-        else if (new_node->key > (p->key)) { //new_node > parent node, go to right child node
-            p = p->right;
-        }
-        else { //new_node < parent node, go to left child node
-            p = p->left;
-        }
     }
-    pthread_mutex_lock(&mutex);
-    if((tree->root) == NULL) { //if root is not exist
-        (tree->root) = new_node; //new_node is be a root
-    }
-    else if (new_node->key < (q->key)) { //new_node < parent node
-        q->left = new_node; //new_node be a left child
-    }
-    else { //new_node > parent node
-        q->right = new_node; //new_node be a right child
-    }
-    pthread_mutex_unlock(&mutex);
     return LAB2_SUCCESS;
-    // You need to implement lab2_node_insert function.
 }
 
 /* 
@@ -155,34 +155,34 @@ int lab2_node_insert_fg(lab2_tree *tree, lab2_node *new_node){
  *  @return                     : status (success or fail)
  */
 int lab2_node_insert_cg(lab2_tree *tree, lab2_node *new_node){
-    pthread_mutex_lock(&mutex);
-    lab2_node *p= tree->root; //declare p
-    lab2_node *q= NULL; //declare q
-    while(p != NULL) { //To a node without child node
-        q = p;
-        if (new_node->key == (p->key)) {
-            return LAB2_ERROR;
-        }
-        else if (new_node->key > (p->key)) { //new_node > parent node, go to right child node
-            p = p->right;
-        }
-        else { //new_node < parent node, go to left child node
-            p = p->left;
-        }
-    }
-
-    if((tree->root) == NULL) { //if root is not exist
-        (tree->root) = new_node; //new_node is be a root
-    }
-    else if (new_node->key < (q->key)) { //new_node < parent node
-        q->left = new_node; //new_node be a left child
-    }
-    else { //new_node > parent node
-        q->right = new_node; //new_node be a right child
-    }
-    pthread_mutex_unlock(&mutex);
+    // You need to implement lab2_node_insert_cg function. // lock 걸어줌
+    pthread_mutex_lock(&Mutex);
+    lab2_node *temp = tree -> root;
+    if(temp == NULL) {
+	tree -> root = new_node;
+	pthread_mutex_unlock(&Mutex);
     return LAB2_SUCCESS;
-    // You need to implement lab2_node_insert function.
+    } else {
+        while(1) {
+            if(temp -> key < new_node -> key) {
+                if(!(temp -> right)) {
+                    temp -> right =  new_node;
+                    break;
+                }
+                temp = temp -> right;
+            } else if(temp -> key > new_node -> key) {
+                if(!(temp -> left)) {
+                    temp -> left = new_node;
+                    break;
+                }
+                temp = temp -> left;
+            } else {
+                break;
+            }
+        }
+    }
+   pthread_mutex_unlock(&Mutex); // lock 해제
+    return LAB2_SUCCESS;
 }
 
 /* 
@@ -193,88 +193,61 @@ int lab2_node_insert_cg(lab2_tree *tree, lab2_node *new_node){
  *  @param int key          : key value that you want to delete. 
  *  @return                 : status (success or fail)
  */
-int lab2_node_remove(lab2_tree *tree, int key){
-    lab2_node *p = tree->root;
-    lab2_node *q = NULL;
-    lab2_node *tmp;
-    if(p == NULL)
-    {
-        return LAB2_ERROR;
-    }
-    while (1){//until node to remove
-        if (key == (p->key)) //node to remove == root
-            break;
-        else if (key < (p->key)){ //node to remove < parent node, go to left child node
-            if (p->left == NULL){
-                return LAB2_ERROR; //does not exist will remove node
-            }
-            q = p;
-            p = p->left;
-        }
-        else { //node to remove > parent node, go to right child node
-            if (p->right == NULL){
-                return LAB2_ERROR; //does not exist will remove node
-            }
-            q = p;
-            p = p->right;
+int lab2_node_remove(lab2_tree *tree, int key) {
+    lab2_node *temp = tree -> root;
+    lab2_node *parent = NULL , *child, *succ, *succ_p;
+    while(temp != NULL && (temp -> key != key)) {
+        parent = temp;
+        if(temp -> key < key) {
+            temp = temp -> right;
+        } else {
+            temp = temp -> left;
         }
     }
-    if ((p->left == NULL) && (p->right == NULL)){// does not exist child node
-        if (p == tree->root){
-            tree->root = NULL;
-            return LAB2_SUCCESS;
-        }
-        if (p == q->left)
-            q->left = NULL;
-        else
-            q->right = NULL;
+    if(temp == NULL) {
+        return LAB2_SUCCESS;
     }
-    else if ((p->left != NULL) && (p->right == NULL)){// only exist left child node
-        if (p == tree->root)
-            tree->root = p->left;
-        else {
-            if (p == q->left)
-                q->left = p->left;
-            else
-                q->right = p->left;
-        }
-    }
-    else if ((p->left == NULL) && (p->right != NULL)){// only exist right child node
-        if (p == tree->root)
-            tree->root = p->right;
-        else {
-            if (p == q->left)
-                q->left = p->right;
-            else
-                q->right = p->right;
-        }
-    }
-    else if ((p->left != NULL) && (p->right != NULL)) { // both exist right child node and left child node
-        q = p;
-        p = p->left;
-        tmp = p;
-        while (1)
+    if((temp -> left == NULL) && (temp -> right == NULL)) { // 아래에 자식 노드가 없을 경우
+        if (parent != NULL)
         {
-            if (p->right == NULL)
-                break;
-            else {
-                tmp = p;
-                p = p->right;
+            if(parent -> left == temp) {
+                parent -> left = NULL;
+            } else {
+                parent -> right = NULL;
             }
+        } else {
+            tree -> root = NULL;
         }
-        q->key = p->key;
-        if (tmp != p) {
-            if (p->left != NULL)
-                tmp->right = p->left;
-            else
-                tmp->right = NULL;
+        
+    } else if(temp -> left == NULL || temp -> right == NULL) { // 아래에 1개의 자식 노드가 있을 경우
+        child = (temp -> left != NULL) ? temp -> left : temp -> right;
+        if(parent != NULL) {
+            if(parent -> left == temp) {
+                parent -> left = child;
+            } else {
+                parent -> right = child;
+            }
+        } else {
+            tree -> root = child;
         }
-        else {
-            q->left = p->left;
+    } else {
+          // 아래에 2개의 자식 노드가 있을 경우
+        succ_p = temp;
+        succ = temp -> right;
+        while(succ -> left != NULL) {
+            succ_p = succ;
+            succ = succ -> left;
         }
+        if(succ_p -> left == succ) {
+            succ_p -> left = succ -> right;
+        } else {
+            succ_p -> right = succ -> right;
+        }
+        temp -> key = succ -> key;
+        temp = succ;
     }
+    lab2_node_delete(temp);
     return LAB2_SUCCESS;
-    // You need to implement lab2_node_remove function.
 }
 
 /* 
@@ -286,90 +259,75 @@ int lab2_node_remove(lab2_tree *tree, int key){
  *  @return                 : status (success or fail)
  */
 int lab2_node_remove_fg(lab2_tree *tree, int key) {
-    lab2_node *p = tree->root;
-    lab2_node *q = NULL;
-    lab2_node *tmp;
-    if(p == NULL)
-    {
-        return LAB2_ERROR;
-    }
-    while (1){//until node to remove
-        if (key == (p->key)) //node to remove == root
-            break;
-        else if (key < (p->key)){ //node to remove < parent node, go to left child node
-            if (p->left == NULL){
-                return LAB2_ERROR; //does not exist will remove node
-            }
-            q = p;
-            p = p->left;
-        }
-        else { //node to remove > parent node, go to right child node
-            if (p->right == NULL){
-                return LAB2_ERROR; //does not exist will remove node
-            }
-            q = p;
-            p = p->right;
-        }
-    }
-    pthread_mutex_lock(&mutex);
-    if ((p->left == NULL) && (p->right == NULL)){// does not exist child node
-        if (p == tree->root){
-            tree->root = NULL;
-            pthread_mutex_unlock(&mutex);
-            return LAB2_SUCCESS;
-        }
-        if (p == q->left)
-            q->left = NULL;
-        else
-            q->right = NULL;
-    }
-    else if ((p->left != NULL) && (p->right == NULL)){// only exist left child node
-        if (p == tree->root)
-            tree->root = p->left;
-        else {
-            if (p == q->left)
-                q->left = p->left;
-            else
-                q->right = p->left;
-        }
-    }
-    else if ((p->left == NULL) && (p->right != NULL)){// only exist right child node
-        if (p == tree->root)
-            tree->root = p->right;
-        else {
-            if (p == q->left)
-                q->left = p->right;
-            else
-                q->right = p->right;
-        }
-    }
-    else if ((p->left != NULL) && (p->right != NULL)) { // both exist right child node and left child node
-        q = p;
-        p = p->left;
-        tmp = p;
-        while (1)
-        {
-            if (p->right == NULL)
-                break;
-            else {
-                tmp = p;
-                p = p->right;
-            }
-        }
-        q->key = p->key;
-        if (tmp != p) {
-            if (p->left != NULL)
-                tmp->right = p->left;
-            else
-                tmp->right = NULL;
-        }
-        else {
-            q->left = p->left;
-        }
-    }
-    pthread_mutex_unlock(&mutex);
-    return LAB2_SUCCESS;
     // You need to implement lab2_node_remove_fg function.
+    lab2_node *temp = tree -> root;
+    lab2_node *parent = NULL , *child, *succ, *succ_p;
+    
+    pthread_mutex_lock(&tree -> mutex);
+    while(temp != NULL && temp -> key != key) {
+        parent = temp;
+        if(temp -> key < key) {
+            temp = temp -> right;
+        } else {
+            temp = temp -> left;
+        }
+    }
+    pthread_mutex_unlock(&tree -> mutex);
+    
+    if(temp == NULL) {
+        return LAB2_SUCCESS;
+    }
+    pthread_mutex_lock(&tree -> mutex);
+    
+    if((temp -> left == NULL) && (temp -> right == NULL)) { // 아래에 자식 노드가 없을 경우
+        if (parent != NULL)
+        {
+            
+            if(parent -> left == temp) {
+                parent -> left = NULL;
+            } else {
+                parent -> right = NULL;
+            }
+            pthread_mutex_unlock(&tree -> mutex);
+        } else {
+            tree -> root = NULL;
+            pthread_mutex_unlock(&tree -> mutex);
+        }
+    } else if(temp -> left == NULL || temp -> right == NULL) { // 아래에 1개의 자식 노드가 있을 경우
+        child = (temp -> left != NULL) ? temp -> left : temp -> right;
+        if(parent != NULL) {
+            if(parent -> left == temp) {
+                parent -> left = child;
+            } else {
+                parent -> right = child;
+            }
+            pthread_mutex_unlock(&tree ->mutex);
+        } else {
+            tree -> root = child;
+            pthread_mutex_unlock(&tree ->mutex);
+        }
+    } else {
+          // 아래에 2개의 자식 노드가 있을 경우
+        succ_p = temp;
+        succ = temp -> right;
+        while(succ -> left != NULL) {
+            succ_p = succ;
+            succ = succ -> left;
+        }
+        if(succ_p -> left == succ) {
+            succ_p -> left = succ -> right;
+        } else {
+            succ_p -> right = succ -> right;
+        }
+        temp -> key = succ -> key;
+        temp = succ;
+        pthread_mutex_unlock(&tree -> mutex);
+    
+    }
+    pthread_mutex_lock(&tree -> mutex);
+    lab2_node_delete(temp);
+    pthread_mutex_unlock(&tree -> mutex);
+    return LAB2_SUCCESS;
 }
 
 
@@ -382,89 +340,63 @@ int lab2_node_remove_fg(lab2_tree *tree, int key) {
  *  @return                 : status (success or fail)
  */
 int lab2_node_remove_cg(lab2_tree *tree, int key) {
-    lab2_node *p = tree->root;
-    lab2_node *q = NULL;
-    lab2_node *tmp;
-    if(p == NULL)
-    {
-        return LAB2_ERROR;
-    }
-    pthread_mutex_lock(&mutex);
-    while (1){//until node to remove
-        if (key == (p->key)) //node to remove == root
-            break;
-        else if (key < (p->key)){ //node to remove < parent node, go to left child node
-            if (p->left == NULL){
-                return LAB2_ERROR; //does not exist will remove node
-            }
-            q = p;
-            p = p->left;
-        }
-        else { //node to remove > parent node, go to right child node
-            if (p->right == NULL){
-                return LAB2_ERROR; //does not exist will remove node
-            }
-            q = p;
-            p = p->right;
+    pthread_mutex_lock(&Mutex);
+    lab2_node *temp = tree -> root;
+    lab2_node *parent = NULL , *child, *succ, *succ_p;
+    while(temp != NULL && temp -> key != key) {
+        parent = temp;
+        if(temp -> key < key) {
+            temp = temp -> right;
+        } else {
+            temp = temp -> left;
         }
     }
-    if ((p->left == NULL) && (p->right == NULL)){// does not exist child node
-        if (p == tree->root){
-            tree->root = NULL;
-            return LAB2_SUCCESS;
-        }
-        if (p == q->left)
-            q->left = NULL;
-        else
-            q->right = NULL;
+    if(temp == NULL) {
+        pthread_mutex_unlock(&Mutex);
+        return LAB2_SUCCESS;
     }
-    else if ((p->left != NULL) && (p->right == NULL)){// only exist left child node
-        if (p == tree->root)
-            tree->root = p->left;
-        else {
-            if (p == q->left)
-                q->left = p->left;
-            else
-                q->right = p->left;
-        }
-    }
-    else if ((p->left == NULL) && (p->right != NULL)){// only exist right child node
-        if (p == tree->root)
-            tree->root = p->right;
-        else {
-            if (p == q->left)
-                q->left = p->right;
-            else
-                q->right = p->right;
-        }
-    }
-    else if ((p->left != NULL) && (p->right != NULL)) { // both exist right child node and left child node
-        q = p;
-        p = p->left;
-        tmp = p;
-        while (1)
+    if((temp -> left == NULL) && (temp -> right == NULL)) { // 아래에 자식 노드가 없을 경우
+        if (parent != NULL)
         {
-            if (p->right == NULL)
-                break;
-            else {
-                tmp = p;
-                p = p->right;
+            if(parent -> left == temp) {
+                parent -> left = NULL;
+            } else {
+                parent -> right = NULL;
             }
+        } else {
+            tree -> root = NULL;
         }
-        q->key = p->key;
-        if (tmp != p) {
-            if (p->left != NULL)
-                tmp->right = p->left;
-            else
-                tmp->right = NULL;
+        
+    } else if(temp -> left == NULL || temp -> right == NULL) { // 아래에 1개의 자식 노드가 있을 경우
+        child = (temp -> left != NULL) ? temp -> left : temp -> right;
+        if(parent != NULL) {
+            if(parent -> left == temp) {
+                parent -> left = child;
+            } else {
+                parent -> right = child;
+            }
+        } else {
+            tree -> root = child;
         }
-        else {
-            q->left = p->left;
+    } else {
+          // 아래에 2개의 자식 노드가 있을 경우
+        succ_p = temp;
+        succ = temp -> right;
+        while(succ -> left != NULL) {
+            succ_p = succ;
+            succ = succ -> left;
         }
+        if(succ_p -> left == succ) {
+            succ_p -> left = succ -> right;
+        } else {
+            succ_p -> right = succ -> right;
+        }
+        temp -> key = succ -> key;
+        temp = succ;
     }
-    pthread_mutex_unlock(&mutex);
+    lab2_node_delete(temp);
+    pthread_mutex_unlock(&Mutex);
     return LAB2_SUCCESS;
-    // You need to implement lab2_node_remove_cg function.
 }
 
 
@@ -476,10 +408,14 @@ int lab2_node_remove_cg(lab2_tree *tree, int key) {
  *  @param lab2_tree *tree  : bst which you want to delete. 
  *  @return                 : status(success or fail)
  */
-int lab2_tree_delete(lab2_tree *tree) {//delete tree fuction
-    free(tree);
-    tree = NULL;
-    // You need to implement lab2_tree_delete function.
+void lab2_tree_delete(lab2_tree *tree) { // 트리를 초기화
+    lab2_node *temp = tree -> root;
+    if(!temp) return;
+    while(temp) {
+        int key = temp -> key;
+        lab2_node_remove(tree, key);
+        temp = tree -> root;
+    }
 }
 
 /*
@@ -490,9 +426,8 @@ int lab2_tree_delete(lab2_tree *tree) {//delete tree fuction
  *  @param lab2_tree *tree  : bst node which you want to remove. 
  *  @return                 : status(success or fail)
  */
-int lab2_node_delete(lab2_node *node) { //delete node fuction
+void lab2_node_delete(lab2_node *node) { // 삭제한 노드의 메모리 할당 제거
     free(node);
     node = NULL;
-    // You need to implement lab2_node_delete function.
 }
 
