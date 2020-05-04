@@ -78,7 +78,6 @@ void* thread_job_delete(void *arg){
         else
             lab2_node_remove(tree, data_set[i]);
     }
-	return 0;
 }
 
 void* thread_job_insert(void *arg){
@@ -99,7 +98,6 @@ void* thread_job_insert(void *arg){
         else
             lab2_node_insert(tree, node);
     }
-	return 0;
 }
 
 void bst_test(int num_threads,int node_count){
