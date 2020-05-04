@@ -88,7 +88,7 @@ int lab2_node_insert(lab2_tree *tree, lab2_node *new_node){
         if (new_node->key > (p->key)) { //new_node > parent node, go to right child node
             p = p->right;
         }
-        else if(new_node->key < (p->key){ //new_node < parent node, go to left child node
+        else if(new_node->key < (p->key)){ //new_node < parent node, go to left child node
             p = p->left;
         }
     }
