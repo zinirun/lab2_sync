@@ -92,7 +92,9 @@ int lab2_node_insert(lab2_tree *tree, lab2_node *new_node) {
                     tmp -> right =  new_node; // Make new node at that point
                     break;
                 }
+                else{
                 tmp = tmp -> right; // if right child not NULL, re-search to right child
+                }
             }
             
             else if(tmp -> key > new_node -> key) { // if inserting key > current key
@@ -100,7 +102,9 @@ int lab2_node_insert(lab2_tree *tree, lab2_node *new_node) {
                     tmp -> left = new_node; // Make new node at that point
                     break;
                 }
+                else{
                 tmp = tmp -> left; // if left child not NULL, re-search to left child
+                }
             }
             else break;
         }
@@ -133,9 +137,11 @@ int lab2_node_insert_fg(lab2_tree *tree, lab2_node *new_node){
                     pthread_mutex_unlock(&tmp -> mutex);
                     break;
                 }
+                else{
                 pthread_mutex_lock(&tmp -> mutex);
                 tmp = tmp -> right; // if right child not NULL, re-search to right child
                 pthread_mutex_unlock(&tmp -> mutex);
+                }
             }
             else if(tmp -> key > new_node -> key) { // if inserting key > current key
                 if(!(tmp -> left)) { // if current's left child is NULL
@@ -144,9 +150,11 @@ int lab2_node_insert_fg(lab2_tree *tree, lab2_node *new_node){
                     pthread_mutex_unlock(&tmp -> mutex);
                     break;
                 }
+                else{
                 pthread_mutex_lock(&tmp -> mutex);
                 tmp = tmp -> left; // if right left not NULL, re-search to left child
                 pthread_mutex_unlock(&tmp -> mutex);
+                }
             }
             else break;
         }
@@ -176,14 +184,18 @@ int lab2_node_insert_cg(lab2_tree *tree, lab2_node *new_node){
                     tmp -> right =  new_node; // Make new node at that point
                     break;
                 }
+                else{
                 tmp = tmp -> right; // if right child not NULL, re-search to right child
+                }
             }
             else if(tmp -> key > new_node -> key) { // if inserting key > current key
                 if(!(tmp -> left)) { // if current's left child is NULL
                     tmp -> left = new_node; // Make new node at that point
                     break;
                 }
+                else{
                 tmp = tmp -> left; // if left child not NULL, re-search to left child
+                }
             }
             else break;
         }
@@ -201,85 +213,78 @@ int lab2_node_insert_cg(lab2_tree *tree, lab2_node *new_node){
  *  @return                 : status (success or fail)
  */
 int lab2_node_remove(lab2_tree *tree, int key){
-    lab2_node *p = tree->root;
-    lab2_node *q = NULL;
-    lab2_node *tmp;
-    if(p == NULL)
-    {
-        return LAB2_ERROR;
-    }
-    while (1){//until node to remove
-        if (key == (p->key)) //node to remove == root
-            break;
-        else if (key < (p->key)){ //node to remove < parent node, go to left child node
-            if (p->left == NULL){
-                return LAB2_ERROR; //does not exist will remove node
-            }
-            q = p;
-            p = p->left;
-        }
-        else { //node to remove > parent node, go to right child node
-            if (p->right == NULL){
-                return LAB2_ERROR; //does not exist will remove node
-            }
-            q = p;
-            p = p->right;
-        }
-    }
-    if ((p->left == NULL) && (p->right == NULL)){// does not exist child node
-        if (p == tree->root){
-            tree->root = NULL;
-            return LAB2_SUCCESS;
-        }
-        if (p == q->left)
-            q->left = NULL;
-        else
-            q->right = NULL;
-    }
-    else if ((p->left != NULL) && (p->right == NULL)){// only exist left child node
-        if (p == tree->root)
-            tree->root = p->left;
-        else {
-            if (p == q->left)
-                q->left = p->left;
-            else
-                q->right = p->left;
-        }
-    }
-    else if ((p->left == NULL) && (p->right != NULL)){// only exist right child node
-        if (p == tree->root)
-            tree->root = p->right;
-        else {
-            if (p == q->left)
-                q->left = p->right;
-            else
-                q->right = p->right;
-        }
-    }
-    else if ((p->left != NULL) && (p->right != NULL)) { // both exist right child node and left child node
-        q = p;
-        p = p->left;
-        tmp = p;
-        while (1)
-        {
-            if (p->right == NULL)
-                break;
-            else {
-                tmp = p;
-                p = p->right;
-            }
-        }
-        q->key = p->key;
-        if (tmp != p) {
-            if (p->left != NULL)
-                tmp->right = p->left;
-            else
-                tmp->right = NULL;
-        }
-        else {
-            q->left = p->left;
-        }
-    }
+    lab2_node* temp = tree -> root;
+    lab2_node* parent = temp;
+    lab2_node* del; 
+    if(root == NULL)
+        return NULL;
+
+    while(temp->key != key){ //현재 노드의 키값이 제거하고자 하는 키값과 같을 때까지 반복
+		parent = temp; //부모노드를 저장한다.
+
+		if(temp->key < key){//현재 노드의 키값보다 제거하고자 하는 키값이 크면
+			temp = temp -> right; //오른쪽자식으로 옮겨 재탐색
+		}
+		else //현재 노드의 키값보다 제거하고자 하는 키값이 작으면
+			temp = temp -> left; //왼쪽자식으로 옮겨 재탐색
+	}
+	del = temp; //제거하고자 하는 키값을 가지고있는 노드의 위치를 저장.
+
+	/* 제거할 때 총 3가지 경우 */
+
+	// 1. 제거하고자 하는 노드의 자식이 하나도 없을 때
+	if(temp->left==NULL && temp->right ==NULL){
+		if(parent->left){//부모의 왼쪽자식이 존재하고
+			if(temp->key==parent->left->key){ //부모의 왼쪽자식의 key와 제거하고자하는 temp노드의 키가 같다면
+				parent->left=NULL; return 1; // 부모의 왼쪽노드를 NULL로 채운다.
+			}
+		}
+		parent->right=NULL;    //그게 아니면 부모의 오른쪽자식을 NULL로 채운다.
+		printf("%d 제거\n",key);
+		return 1;
+		
+	}
+	// 2. 제거하고자 하는 노드의 자식이 모두(2개) 있을 때
+	else if(temp->left!=NULL && temp->right !=NULL){
+		temp = temp->left; //제거하고자 하는 노드의 왼쪽자식으로 내려간다.
+		if(temp->right ==NULL){ //왼쪽자식에 오른쪽자식이 없으면  
+				del->key = temp->key; // 제거하고자하는 노드에 왼쪽 자식의 key를 복사한다.
+				del->left = temp->left; //제거하고자하는 노드에 왼쪽 자식의 왼쪽 자식을 붙인다.
+				printf("%d 제거\n",key);
+				return 1;
+			}
+		while(1){
+			if(temp->right ==NULL){ // 제거하고자하는 노드의 왼쪽 서브트리에서 key값이 가장 큰 노드 발견하면
+				del->key = temp->key;   // 제거하고자하는 노드에 가장 큰 key를 가지는 노드의 key를 복사한다.
+				parent->right = temp->left; // 가장 큰 key를 가지는 노드의 왼쪽자식을 부모의 오른쪽에 붙인다.
+				printf("%d 제거\n",key);
+				return 1;
+			}
+			else{ //왼쪽자식에 오른쪽자식이 있으면
+				parent = temp;    //해당노드를 부모로 저장하고
+				temp= temp->right; // 오른쪽 자식으로 노드를 옮겨 재탐색.
+			}
+		}
+	}
+	// 3. 제거하고자 하는 노드의 자식이 왼쪽이나 오른쪽 둘 중 하나만 있을 때
+	else{
+		if(temp->right != NULL){ //제거하고자 하는 노드가 오른쪽자식을 가지고 있고
+			if(parent->left->key == key){ //부모의 왼쪽에 달려있으면
+				parent->left =temp->right;  //부모의 왼쪽에 제거하고자하는 노드의 오른쪽자식을 붙인다.
+			}
+			else{parent->right =temp->right;}  //부모의 오른쪽에 달려있으면 오른쪽에 붙인다.
+			printf("%d 제거\n",key);
+			return 1;	
+		}
+		if(temp->left != NULL){  //제거하고자 하는 노드가 왼쪽자식을 가지고 있고
+			if(parent->left->key == key){ //부모의 왼쪽에 달려있으면
+				parent->left =temp->left; //부모의 왼쪽에 제거하고자하는 노드의 왼쪽자식을 붙인다.
+			}
+			else{parent->right =temp->left;} //부모의 오른쪽에 달려있으면 오른쪽에 붙인다.
+			printf("%d 제거\n",key);
+			return 1;	
+		}
+	}
     return LAB2_SUCCESS;
     // You need to implement lab2_node_remove function.
 }
@@ -293,88 +298,78 @@ int lab2_node_remove(lab2_tree *tree, int key){
  *  @return                 : status (success or fail)
  */
 int lab2_node_remove_fg(lab2_tree *tree, int key) {
-    lab2_node *p = tree->root;
-    lab2_node *q = NULL;
-    lab2_node *tmp;
-    if(p == NULL)
-    {
-        return LAB2_ERROR;
-    }
-    while (1){//until node to remove
-        if (key == (p->key)) //node to remove == root
-            break;
-        else if (key < (p->key)){ //node to remove < parent node, go to left child node
-            if (p->left == NULL){
-                return LAB2_ERROR; //does not exist will remove node
-            }
-            q = p;
-            p = p->left;
-        }
-        else { //node to remove > parent node, go to right child node
-            if (p->right == NULL){
-                return LAB2_ERROR; //does not exist will remove node
-            }
-            q = p;
-            p = p->right;
-        }
-    }
-    pthread_mutex_lock(&mutex);
-    if ((p->left == NULL) && (p->right == NULL)){// does not exist child node
-        if (p == tree->root){
-            tree->root = NULL;
-            pthread_mutex_unlock(&mutex);
-            return LAB2_SUCCESS;
-        }
-        if (p == q->left)
-            q->left = NULL;
-        else
-            q->right = NULL;
-    }
-    else if ((p->left != NULL) && (p->right == NULL)){// only exist left child node
-        if (p == tree->root)
-            tree->root = p->left;
-        else {
-            if (p == q->left)
-                q->left = p->left;
-            else
-                q->right = p->left;
-        }
-    }
-    else if ((p->left == NULL) && (p->right != NULL)){// only exist right child node
-        if (p == tree->root)
-            tree->root = p->right;
-        else {
-            if (p == q->left)
-                q->left = p->right;
-            else
-                q->right = p->right;
-        }
-    }
-    else if ((p->left != NULL) && (p->right != NULL)) { // both exist right child node and left child node
-        q = p;
-        p = p->left;
-        tmp = p;
-        while (1)
-        {
-            if (p->right == NULL)
-                break;
-            else {
-                tmp = p;
-                p = p->right;
-            }
-        }
-        q->key = p->key;
-        if (tmp != p) {
-            if (p->left != NULL)
-                tmp->right = p->left;
-            else
-                tmp->right = NULL;
-        }
-        else {
-            q->left = p->left;
-        }
-    }
-    pthread_mutex_unlock(&mutex);
+    lab2_node* temp = tree -> root;
+    lab2_node* parent = temp;
+    lab2_node* del; 
+    if(root == NULL)
+        return NULL;
+
+    while(temp->key != key){ //현재 노드의 키값이 제거하고자 하는 키값과 같을 때까지 반복
+		parent = temp; //부모노드를 저장한다.
+
+		if(temp->key < key){//현재 노드의 키값보다 제거하고자 하는 키값이 크면
+			temp = temp -> right; //오른쪽자식으로 옮겨 재탐색
+		}
+		else //현재 노드의 키값보다 제거하고자 하는 키값이 작으면
+			temp = temp -> left; //왼쪽자식으로 옮겨 재탐색
+	}
+	del = temp; //제거하고자 하는 키값을 가지고있는 노드의 위치를 저장.
+
+	/* 제거할 때 총 3가지 경우 */
+
+	// 1. 제거하고자 하는 노드의 자식이 하나도 없을 때
+	if(temp->left==NULL && temp->right ==NULL){
+		if(parent->left){//부모의 왼쪽자식이 존재하고
+			if(temp->key==parent->left->key){ //부모의 왼쪽자식의 key와 제거하고자하는 temp노드의 키가 같다면
+				parent->left=NULL; return 1; // 부모의 왼쪽노드를 NULL로 채운다.
+			}
+		}
+		parent->right=NULL;    //그게 아니면 부모의 오른쪽자식을 NULL로 채운다.
+		printf("%d 제거\n",key);
+		return 1;
+		
+	}
+	// 2. 제거하고자 하는 노드의 자식이 모두(2개) 있을 때
+	else if(temp->left!=NULL && temp->right !=NULL){
+		temp = temp->left; //제거하고자 하는 노드의 왼쪽자식으로 내려간다.
+		if(temp->right ==NULL){ //왼쪽자식에 오른쪽자식이 없으면  
+				del->key = temp->key; // 제거하고자하는 노드에 왼쪽 자식의 key를 복사한다.
+				del->left = temp->left; //제거하고자하는 노드에 왼쪽 자식의 왼쪽 자식을 붙인다.
+				printf("%d 제거\n",key);
+				return 1;
+			}
+		while(1){
+			if(temp->right ==NULL){ // 제거하고자하는 노드의 왼쪽 서브트리에서 key값이 가장 큰 노드 발견하면
+				del->key = temp->key;   // 제거하고자하는 노드에 가장 큰 key를 가지는 노드의 key를 복사한다.
+				parent->right = temp->left; // 가장 큰 key를 가지는 노드의 왼쪽자식을 부모의 오른쪽에 붙인다.
+				printf("%d 제거\n",key);
+				return 1;
+			}
+			else{ //왼쪽자식에 오른쪽자식이 있으면
+				parent = temp;    //해당노드를 부모로 저장하고
+				temp= temp->right; // 오른쪽 자식으로 노드를 옮겨 재탐색.
+			}
+		}
+	}
+	// 3. 제거하고자 하는 노드의 자식이 왼쪽이나 오른쪽 둘 중 하나만 있을 때
+	else{
+		if(temp->right != NULL){ //제거하고자 하는 노드가 오른쪽자식을 가지고 있고
+			if(parent->left->key == key){ //부모의 왼쪽에 달려있으면
+				parent->left =temp->right;  //부모의 왼쪽에 제거하고자하는 노드의 오른쪽자식을 붙인다.
+			}
+			else{parent->right =temp->right;}  //부모의 오른쪽에 달려있으면 오른쪽에 붙인다.
+			printf("%d 제거\n",key);
+			return 1;	
+		}
+		if(temp->left != NULL){  //제거하고자 하는 노드가 왼쪽자식을 가지고 있고
+			if(parent->left->key == key){ //부모의 왼쪽에 달려있으면
+				parent->left =temp->left; //부모의 왼쪽에 제거하고자하는 노드의 왼쪽자식을 붙인다.
+			}
+			else{parent->right =temp->left;} //부모의 오른쪽에 달려있으면 오른쪽에 붙인다.
+			printf("%d 제거\n",key);
+			return 1;	
+		}
+	}
     return LAB2_SUCCESS;
     // You need to implement lab2_node_remove_fg function.
 }
@@ -389,87 +384,78 @@ int lab2_node_remove_fg(lab2_tree *tree, int key) {
  *  @return                 : status (success or fail)
  */
 int lab2_node_remove_cg(lab2_tree *tree, int key) {
-    lab2_node *p = tree->root;
-    lab2_node *q = NULL;
-    lab2_node *tmp;
-    if(p == NULL)
-    {
-        return LAB2_ERROR;
-    }
-    pthread_mutex_lock(&mutex);
-    while (1){//until node to remove
-        if (key == (p->key)) //node to remove == root
-            break;
-        else if (key < (p->key)){ //node to remove < parent node, go to left child node
-            if (p->left == NULL){
-                return LAB2_ERROR; //does not exist will remove node
-            }
-            q = p;
-            p = p->left;
-        }
-        else { //node to remove > parent node, go to right child node
-            if (p->right == NULL){
-                return LAB2_ERROR; //does not exist will remove node
-            }
-            q = p;
-            p = p->right;
-        }
-    }
-    if ((p->left == NULL) && (p->right == NULL)){// does not exist child node
-        if (p == tree->root){
-            tree->root = NULL;
-            return LAB2_SUCCESS;
-        }
-        if (p == q->left)
-            q->left = NULL;
-        else
-            q->right = NULL;
-    }
-    else if ((p->left != NULL) && (p->right == NULL)){// only exist left child node
-        if (p == tree->root)
-            tree->root = p->left;
-        else {
-            if (p == q->left)
-                q->left = p->left;
-            else
-                q->right = p->left;
-        }
-    }
-    else if ((p->left == NULL) && (p->right != NULL)){// only exist right child node
-        if (p == tree->root)
-            tree->root = p->right;
-        else {
-            if (p == q->left)
-                q->left = p->right;
-            else
-                q->right = p->right;
-        }
-    }
-    else if ((p->left != NULL) && (p->right != NULL)) { // both exist right child node and left child node
-        q = p;
-        p = p->left;
-        tmp = p;
-        while (1)
-        {
-            if (p->right == NULL)
-                break;
-            else {
-                tmp = p;
-                p = p->right;
-            }
-        }
-        q->key = p->key;
-        if (tmp != p) {
-            if (p->left != NULL)
-                tmp->right = p->left;
-            else
-                tmp->right = NULL;
-        }
-        else {
-            q->left = p->left;
-        }
-    }
-    pthread_mutex_unlock(&mutex);
+    lab2_node* temp = tree -> root;
+    lab2_node* parent = temp;
+    lab2_node* del; 
+    if(root == NULL)
+        return NULL;
+
+    while(temp->key != key){ //현재 노드의 키값이 제거하고자 하는 키값과 같을 때까지 반복
+		parent = temp; //부모노드를 저장한다.
+
+		if(temp->key < key){//현재 노드의 키값보다 제거하고자 하는 키값이 크면
+			temp = temp -> right; //오른쪽자식으로 옮겨 재탐색
+		}
+		else //현재 노드의 키값보다 제거하고자 하는 키값이 작으면
+			temp = temp -> left; //왼쪽자식으로 옮겨 재탐색
+	}
+	del = temp; //제거하고자 하는 키값을 가지고있는 노드의 위치를 저장.
+
+	/* 제거할 때 총 3가지 경우 */
+
+	// 1. 제거하고자 하는 노드의 자식이 하나도 없을 때
+	if(temp->left==NULL && temp->right ==NULL){
+		if(parent->left){//부모의 왼쪽자식이 존재하고
+			if(temp->key==parent->left->key){ //부모의 왼쪽자식의 key와 제거하고자하는 temp노드의 키가 같다면
+				parent->left=NULL; return 1; // 부모의 왼쪽노드를 NULL로 채운다.
+			}
+		}
+		parent->right=NULL;    //그게 아니면 부모의 오른쪽자식을 NULL로 채운다.
+		printf("%d 제거\n",key);
+		return 1;
+		
+	}
+	// 2. 제거하고자 하는 노드의 자식이 모두(2개) 있을 때
+	else if(temp->left!=NULL && temp->right !=NULL){
+		temp = temp->left; //제거하고자 하는 노드의 왼쪽자식으로 내려간다.
+		if(temp->right ==NULL){ //왼쪽자식에 오른쪽자식이 없으면  
+				del->key = temp->key; // 제거하고자하는 노드에 왼쪽 자식의 key를 복사한다.
+				del->left = temp->left; //제거하고자하는 노드에 왼쪽 자식의 왼쪽 자식을 붙인다.
+				printf("%d 제거\n",key);
+				return 1;
+			}
+		while(1){
+			if(temp->right ==NULL){ // 제거하고자하는 노드의 왼쪽 서브트리에서 key값이 가장 큰 노드 발견하면
+				del->key = temp->key;   // 제거하고자하는 노드에 가장 큰 key를 가지는 노드의 key를 복사한다.
+				parent->right = temp->left; // 가장 큰 key를 가지는 노드의 왼쪽자식을 부모의 오른쪽에 붙인다.
+				printf("%d 제거\n",key);
+				return 1;
+			}
+			else{ //왼쪽자식에 오른쪽자식이 있으면
+				parent = temp;    //해당노드를 부모로 저장하고
+				temp= temp->right; // 오른쪽 자식으로 노드를 옮겨 재탐색.
+			}
+		}
+	}
+	// 3. 제거하고자 하는 노드의 자식이 왼쪽이나 오른쪽 둘 중 하나만 있을 때
+	else{
+		if(temp->right != NULL){ //제거하고자 하는 노드가 오른쪽자식을 가지고 있고
+			if(parent->left->key == key){ //부모의 왼쪽에 달려있으면
+				parent->left =temp->right;  //부모의 왼쪽에 제거하고자하는 노드의 오른쪽자식을 붙인다.
+			}
+			else{parent->right =temp->right;}  //부모의 오른쪽에 달려있으면 오른쪽에 붙인다.
+			printf("%d 제거\n",key);
+			return 1;	
+		}
+		if(temp->left != NULL){  //제거하고자 하는 노드가 왼쪽자식을 가지고 있고
+			if(parent->left->key == key){ //부모의 왼쪽에 달려있으면
+				parent->left =temp->left; //부모의 왼쪽에 제거하고자하는 노드의 왼쪽자식을 붙인다.
+			}
+			else{parent->right =temp->left;} //부모의 오른쪽에 달려있으면 오른쪽에 붙인다.
+			printf("%d 제거\n",key);
+			return 1;	
+		}
+	}
     return LAB2_SUCCESS;
     // You need to implement lab2_node_remove_cg function.
 }
@@ -484,8 +470,13 @@ int lab2_node_remove_cg(lab2_tree *tree, int key) {
  *  @return                 : status(success or fail)
  */
 int lab2_tree_delete(lab2_tree *tree) {//delete tree fuction
-    free(tree);
-    tree = NULL;
+    lab2_node *temp = tree -> root;
+    if(!temp) return;
+    while(temp) {
+        int key = temp -> key;
+        lab2_node_remove(tree, key);
+        temp = tree -> root;
+    }
     // You need to implement lab2_tree_delete function.
 }
 
