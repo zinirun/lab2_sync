@@ -51,6 +51,7 @@ int lab2_node_print_inorder(lab2_tree *tree)
 lab2_tree *lab2_tree_create() {
     lab2_tree *tree = (lab2_tree *)malloc(sizeof(lab2_tree)); //create tree by dynamic allocation
     tree->root = NULL;
+    pthread_mutex_init(&tree->mutex,NULL);
     return tree;
     // You need to implement lab2_tree_create function.
 }
@@ -66,6 +67,7 @@ lab2_tree *lab2_tree_create() {
 lab2_node * lab2_node_create(int key) {
     lab2_node *node = (lab2_node *)malloc(sizeof(lab2_node)); //create node by dynamic allocation
     node->key = key;
+    pthread_mutex_init(&node->mutex,NULL);
     return node;
     // You need to implement lab2_node_create function.
 }
