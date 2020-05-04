@@ -484,7 +484,7 @@ void lab2_tree_delete(lab2_tree *tree) {//delete tree fuction
     while(tmp) {
         int key = tmp -> key;
         lab2_node_remove(tree, key);
-        temp = tree -> root;
+        tmp = tree -> root;
     }
     // You need to implement lab2_tree_delete function.
 }

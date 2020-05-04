@@ -27,7 +27,7 @@
  *  int key                 : node key value 
  */
 typedef struct lab2_node {
-
+    pthread_mutex_t mutex;
     struct lab2_node *left;
     struct lab2_node *right;
     int key;
@@ -40,6 +40,7 @@ typedef struct lab2_node {
  *  struct lab2_node *root  : root node of bst.
  */
 typedef struct lab2_tree {
+    pthread_mutex_t mutex;
     struct lab2_node *root;
 } lab2_tree;
 
