@@ -27,7 +27,7 @@
  *  int key                 : node key value 
  */
 typedef struct lab2_node {
-    pthread_mutex_t mutex;
+
     struct lab2_node *left;
     struct lab2_node *right;
     int key;
@@ -40,7 +40,6 @@ typedef struct lab2_node {
  *  struct lab2_node *root  : root node of bst.
  */
 typedef struct lab2_tree {
-    pthread_mutex_t mutex;
     struct lab2_node *root;
 } lab2_tree;
 
@@ -63,7 +62,7 @@ typedef struct thread_arg{
  * TODO
  *  You need to implement these functions. 
  */
-void inorder(lab2_node *node);
+void inorder(lab2_tree *tree, lab2_node *C_Node);
 int lab2_node_print_inorder(lab2_tree *tree);
 lab2_tree *lab2_tree_create();
 lab2_node *lab2_node_create(int key);
@@ -73,8 +72,8 @@ int lab2_node_insert_cg(lab2_tree *tree, lab2_node *new_node);
 int lab2_node_remove(lab2_tree *tree, int key);
 int lab2_node_remove_fg(lab2_tree *tree, int key);
 int lab2_node_remove_cg(lab2_tree *tree, int key);
-void lab2_tree_delete(lab2_tree *tree);
-void lab2_node_delete(lab2_node *node);
+int lab2_tree_delete(lab2_tree *tree);
+int lab2_node_delete(lab2_node *node);
 
 
 /*
