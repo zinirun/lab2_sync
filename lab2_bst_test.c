@@ -75,8 +75,6 @@ void* thread_job_delete(void *arg){
             lab2_node_remove_fg(tree, data_set[i]);        
         else if(is_sync == LAB2_TYPE_COARSEGRAINED)
             lab2_node_remove_cg(tree, data_set[i]);
-        else
-            lab2_node_remove(tree, data_set[i]);
     }
 }
 
@@ -95,8 +93,6 @@ void* thread_job_insert(void *arg){
             lab2_node_insert_fg(tree, node);
         else if(is_sync == LAB2_TYPE_COARSEGRAINED)
             lab2_node_insert_cg(tree, node);
-        else
-            lab2_node_insert(tree, node);
     }
 }
 
@@ -135,7 +131,7 @@ void bst_test(int num_threads,int node_count){
     gettimeofday(&tv_end, NULL);
     exe_time = get_timeval(&tv_start, &tv_end);
 
-    print_result(tree,num_threads, node_count, is_sync,LAB2_OPTYPE_INSERT ,exe_time);
+    print_result(tree,num_threads, node_count, LAB2_TYPE_SINGLE,LAB2_OPTYPE_INSERT ,exe_time);
     lab2_tree_delete(tree);
 
     /* 
@@ -221,8 +217,6 @@ void bst_test(int num_threads,int node_count){
             lab2_node_insert_fg(tree,node);
         else if(is_sync == LAB2_TYPE_COARSEGRAINED)
             lab2_node_insert_cg(tree,node);
-        else
-            lab2_node_insert(tree, node);
     }            
     
     gettimeofday(&tv_delete_start, NULL);
@@ -256,8 +250,6 @@ void bst_test(int num_threads,int node_count){
             lab2_node_insert_fg(tree,node);
         else if(is_sync == LAB2_TYPE_COARSEGRAINED)
             lab2_node_insert_cg(tree,node);
-        else
-            lab2_node_insert(tree, node);
     }
 
     gettimeofday(&tv_delete_start, NULL);
