@@ -27,7 +27,6 @@
 #include <assert.h>
 #include <pthread.h>
 #include <asm/unistd.h>
-
 #include "lab2_sync_types.h"
 
 int shared_variable=0;
