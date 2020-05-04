@@ -307,20 +307,23 @@ int lab2_node_remove_fg(lab2_tree *tree, int x) { // fine-grained node delete fu
 			p = p->RL;
 		}
 	}
-	pthread_mutex_lock(&lock); // locking
+	pthread_mutex_lock(&tree->mutex); // locking tree
 	if ((p->LL == NULL) && (p->RL == NULL))	{ // no child
+        pthread_mutex_lock(&new_node->mutex);
 		if (p == tree->root) {
 			tree->root = NULL;
-			pthread_mutex_unlock(&lock); //unlocking
+			pthread_mutex_unlock(&tree->mutex); //unlocking
 			return LAB2_SUCCESS;
 		}
 		if (p == q->LL)
 			q->LL = NULL;
 		else
 			q->RL = NULL;
+        pthread_mutex_unlock(&new_node->mutex);
 	}
 	else if ((p->LL != NULL) && (p->RL == NULL)) { // only exist left child
-		if (p == tree->root)
+		pthread_mutex_lock(&new_node->mutex);
+        if (p == tree->root)
 			tree->root = p->LL;
 		else {
 			if (p == q->LL)
@@ -328,9 +331,11 @@ int lab2_node_remove_fg(lab2_tree *tree, int x) { // fine-grained node delete fu
 			else
 				q->RL = p->LL;
 		}
+        pthread_mutex_unlock(&new_node->mutex);
 	}
 	else if ((p->LL == NULL) && (p->RL != NULL)) { // only exist right child
-		if (p == tree->root)
+		pthread_mutex_lock(&new_node->mutex);
+        if (p == tree->root)
 			tree->root = p->RL;
 		else {
 			if (p == q->LL)
@@ -338,9 +343,10 @@ int lab2_node_remove_fg(lab2_tree *tree, int x) { // fine-grained node delete fu
 			else
 				q->RL = p->RL;
 		}
+        pthread_mutex_unlock(&new_node->mutex);
 	}
 	else if ((p->LL != NULL) && (p->RL != NULL)) { // both exist right and left child
-		q = p;
+        q = p;
 		p = p->LL;
 		t = p;
 		while (1)
@@ -353,6 +359,7 @@ int lab2_node_remove_fg(lab2_tree *tree, int x) { // fine-grained node delete fu
 			}
 		}
 		q->data = p->data;
+        pthread_mutex_lock(&new_node->mutex);
 		if (t != p) {
 			if (p->LL != NULL)
 				t->RL = p->LL;
@@ -362,8 +369,9 @@ int lab2_node_remove_fg(lab2_tree *tree, int x) { // fine-grained node delete fu
 		else {
 			q->LL = p->LL;
 		}
+        pthread_mutex_unlock(&new_node->mutex);
 	}
-	pthread_mutex_unlock(&lock); //unlocking
+	pthread_mutex_unlock(&tree->mutex); //unlocking
 	return LAB2_SUCCESS;
 }
 
