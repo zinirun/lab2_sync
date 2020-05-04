@@ -296,12 +296,12 @@ int lab2_node_remove_fg(lab2_tree *tree, int key) {
         return LAB2_ERROR;
     }
     while (1){//until node to remove
-        pthread_mutex_lock(&p->mutex);
+        //pthread_mutex_lock(&p->mutex);
         if (key == (p->key)) //node to remove == root
             break;
         else if (key < (p->key)){ //node to remove < parent node, go to left child node
             if (p->left == NULL){
-                pthread_mutex_unlock(&p->mutex);
+                //pthread_mutex_unlock(&p->mutex);
                 return LAB2_ERROR; //does not exist will remove node
             }
             q = p;
@@ -309,13 +309,13 @@ int lab2_node_remove_fg(lab2_tree *tree, int key) {
         }
         else { //node to remove > parent node, go to right child node
             if (p->right == NULL){
-                pthread_mutex_unlock(&p->mutex);
+                //pthread_mutex_unlock(&p->mutex);
                 return LAB2_ERROR; //does not exist will remove node
             }
             q = p;
             p = p->right;
         }
-        pthread_mutex_unlock(&p->mutex);
+        //pthread_mutex_unlock(&p->mutex);
     }
     if ((p->left == NULL) && (p->right == NULL)){// does not exist child node
         //pthread_mutex_lock(&tree->mutex);
