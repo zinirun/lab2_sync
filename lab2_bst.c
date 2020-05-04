@@ -92,7 +92,7 @@ int lab2_node_insert(lab2_tree *tree, lab2_node *new_node) {
                     tmp -> right =  new_node; // Make new node at that point
                     break;
                 }
-                else tmp = tmp -> right; // if right child not NULL, re-search to right child
+                tmp = tmp -> right; // if right child not NULL, re-search to right child
             }
             
             else if(tmp -> key > new_node -> key) { // if inserting key > current key
@@ -100,7 +100,7 @@ int lab2_node_insert(lab2_tree *tree, lab2_node *new_node) {
                     tmp -> left = new_node; // Make new node at that point
                     break;
                 }
-                else tmp = tmp -> left; // if left child not NULL, re-search to left child
+                tmp = tmp -> left; // if left child not NULL, re-search to left child
             }
             else break;
         }
@@ -133,13 +133,10 @@ int lab2_node_insert_fg(lab2_tree *tree, lab2_node *new_node){
                     pthread_mutex_unlock(&tmp -> mutex);
                     break;
                 }
-                else {
-                    pthread_mutex_lock(&tmp -> mutex);
-                    tmp = tmp -> right; // if right child not NULL, re-search to right child
-                    pthread_mutex_unlock(&tmp -> mutex);
-                }
+                pthread_mutex_lock(&tmp -> mutex);
+                tmp = tmp -> right; // if right child not NULL, re-search to right child
+                pthread_mutex_unlock(&tmp -> mutex);
             }
-            
             else if(tmp -> key > new_node -> key) { // if inserting key > current key
                 if(!(tmp -> left)) { // if current's left child is NULL
                     pthread_mutex_lock(&tmp -> mutex);
@@ -147,11 +144,9 @@ int lab2_node_insert_fg(lab2_tree *tree, lab2_node *new_node){
                     pthread_mutex_unlock(&tmp -> mutex);
                     break;
                 }
-                else{
-                    pthread_mutex_lock(&tmp -> mutex);
-                    tmp = tmp -> left; // if right left not NULL, re-search to left child
-                    pthread_mutex_unlock(&tmp -> mutex);
-                }
+                pthread_mutex_lock(&tmp -> mutex);
+                tmp = tmp -> left; // if right left not NULL, re-search to left child
+                pthread_mutex_unlock(&tmp -> mutex);
             }
             else break;
         }
@@ -181,17 +176,15 @@ int lab2_node_insert_cg(lab2_tree *tree, lab2_node *new_node){
                     tmp -> right =  new_node; // Make new node at that point
                     break;
                 }
-                else tmp = tmp -> right; // if right child not NULL, re-search to right child
+                tmp = tmp -> right; // if right child not NULL, re-search to right child
             }
-            
             else if(tmp -> key > new_node -> key) { // if inserting key > current key
                 if(!(tmp -> left)) { // if current's left child is NULL
                     tmp -> left = new_node; // Make new node at that point
                     break;
                 }
-                else tmp = tmp -> left; // if left child not NULL, re-search to left child
+                tmp = tmp -> left; // if left child not NULL, re-search to left child
             }
-
             else break;
         }
     }
