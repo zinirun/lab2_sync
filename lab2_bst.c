@@ -205,74 +205,60 @@ int lab2_node_insert_cg(lab2_tree *tree, lab2_node *new_node){
  *  @return                 : status (success or fail)
  */
 int lab2_node_remove(lab2_tree *tree, int key) {
-    lab2_node *tmp= tree -> root;
+    lab2_node *tmp = tree -> root;
     lab2_node *parent = NULL;
-    lab2_node *del;
-
-    while(tmp->key != key){
-		parent = tmp;
-		if(tmp->key < key){
-			tmp = tmp -> right;
-		}
-		else{
+    lab2_node *child, *del, *del_p;
+    while(tmp != NULL && (tmp -> key != key)) {
+        parent = tmp;
+        if(tmp -> key < key) {
+            tmp = tmp -> right;
+        } else {
             tmp = tmp -> left;
         }
-	}
-	del = tmp;
-
-	// Case 1
-	if(tmp->left==NULL && tmp->right ==NULL){
-		if(parent->left){
-			if(tmp->key==parent->left->key){
-				parent->left=NULL; return LAB2_SUCCESS;
-			}
-		}
-		parent->right=NULL;
-		return LAB2_SUCCESS;
-	}
-	// Case 2
-	else if(tmp->left!=NULL && tmp->right !=NULL){
-		tmp = tmp->left;
-		if(tmp->right ==NULL){
-				del->key = tmp->key;
-				del->left = tmp->left;
-				return LAB2_SUCCESS;
-			}
-		while(1){
-			if(tmp->right == NULL){ 
-				del->key = tmp->key;
-				parent->right = tmp->left;
-				return LAB2_SUCCESS;
-			}
-			else{
-				parent = tmp;
-				tmp= tmp->right;
-			}
-		}
-	}
-	// Case 3
-	else{
-		if(tmp->right != NULL){
-			if(parent->left->key == key){
-				parent->left =tmp->right;
-			}
-			else{
-                parent->right =tmp->right;
+    }
+    if(tmp == NULL) {
+        return LAB2_SUCCESS;
+    }
+    if((tmp -> left == NULL) && (tmp -> right == NULL)) {
+        if (parent != NULL)
+        {
+            if(parent -> left == tmp) {
+                parent -> left = NULL;
+            } else {
+                parent -> right = NULL;
             }
-			return LAB2_SUCCESS;	
-		}
-		if(tmp->left != NULL){
-			if(parent->left->key == key){
-				parent->left =tmp->left;
-			}
-			else{
-                parent->right =tmp->left;
+        } else {
+            tree -> root = NULL;
+        }
+        
+    } else if(tmp -> left == NULL || tmp -> right == NULL) {
+        child = (tmp -> left != NULL) ? tmp -> left : tmp -> right;
+        if(parent != NULL) {
+            if(parent -> left == tmp) {
+                parent -> left = child;
+            } else {
+                parent -> right = child;
             }
-			return LAB2_SUCCESS;	
-		}
-	}
+        } else {
+            tree -> root = child;
+        }
+    } else {
+        del_p = tmp;
+        del = tmp -> right;
+        while(del -> left != NULL) {
+            del_p = del;
+            del = del -> left;
+        }
+        if(del_p -> left == del) {
+            del_p -> left = del -> right;
+        } else {
+            del_p -> right = del -> right;
+        }
+        tmp -> key = del -> key;
+        tmp = del;
+    }
     lab2_node_delete(tmp);
-    return LAB2_ERROR;
+    return LAB2_SUCCESS;
 }
 
 /* 
@@ -286,73 +272,58 @@ int lab2_node_remove(lab2_tree *tree, int key) {
 int lab2_node_remove_fg(lab2_tree *tree, int key) {
     // You need to implement lab2_node_remove_fg function.
     pthread_mutex_lock(&mutex);
-    lab2_node *tmp= tree -> root;
+    lab2_node *tmp = tree -> root;
     lab2_node *parent = NULL;
-    lab2_node *del;
-
-    while(tmp->key != key){
-		parent = tmp;
-		if(tmp->key < key){
-			tmp = tmp -> right;
-		}
-		else{
+    lab2_node *child, *del, *del_p;
+    while(tmp != NULL && (tmp -> key != key)) {
+        parent = tmp;
+        if(tmp -> key < key) {
+            tmp = tmp -> right;
+        } else {
             tmp = tmp -> left;
         }
-	}
-	del = tmp;
-
-	// Case 1
-	if(tmp->left==NULL && tmp->right ==NULL){
-		if(parent->left){
-			if(tmp->key==parent->left->key){
-				parent->left=NULL; return LAB2_SUCCESS;
-			}
-		}
-		parent->right=NULL;
-		return LAB2_SUCCESS;
-		
-	}
-	// Case 2
-	else if(tmp->left!=NULL && tmp->right !=NULL){
-		tmp = tmp->left;
-		if(tmp->right ==NULL){
-				del->key = tmp->key;
-				del->left = tmp->left;
-				return LAB2_SUCCESS;
-			}
-		while(1){
-			if(tmp->right == NULL){ 
-				del->key = tmp->key;
-				parent->right = tmp->left;
-				return LAB2_SUCCESS;
-			}
-			else{
-				parent = tmp;
-				tmp= tmp->right;
-			}
-		}
-	}
-	// Case 3
-	else{
-		if(tmp->right != NULL){
-			if(parent->left->key == key){
-				parent->left =tmp->right;
-			}
-			else{
-                parent->right =tmp->right;
+    }
+    if(tmp == NULL) {
+        return LAB2_SUCCESS;
+    }
+    if((tmp -> left == NULL) && (tmp -> right == NULL)) {
+        if (parent != NULL)
+        {
+            if(parent -> left == tmp) {
+                parent -> left = NULL;
+            } else {
+                parent -> right = NULL;
             }
-			return LAB2_SUCCESS;
-		}
-		if(tmp->left != NULL){
-			if(parent->left->key == key){
-				parent->left =tmp->left;
-			}
-			else{
-                parent->right =tmp->left;
+        } else {
+            tree -> root = NULL;
+        }
+        
+    } else if(tmp -> left == NULL || tmp -> right == NULL) {
+        child = (tmp -> left != NULL) ? tmp -> left : tmp -> right;
+        if(parent != NULL) {
+            if(parent -> left == tmp) {
+                parent -> left = child;
+            } else {
+                parent -> right = child;
             }
-			return LAB2_SUCCESS;	
-		}
-	}
+        } else {
+            tree -> root = child;
+        }
+    } else {
+        del_p = tmp;
+        del = tmp -> right;
+        while(del -> left != NULL) {
+            del_p = del;
+            del = del -> left;
+        }
+        if(del_p -> left == del) {
+            del_p -> left = del -> right;
+        } else {
+            del_p -> right = del -> right;
+        }
+        tmp -> key = del -> key;
+        tmp = del;
+    }
     lab2_node_delete(tmp);
     pthread_mutex_unlock(&mutex);
     return LAB2_SUCCESS;
@@ -369,73 +340,58 @@ int lab2_node_remove_fg(lab2_tree *tree, int key) {
  */
 int lab2_node_remove_cg(lab2_tree *tree, int key) {
     pthread_mutex_lock(&mutex);
-    lab2_node *tmp= tree -> root;
+    lab2_node *tmp = tree -> root;
     lab2_node *parent = NULL;
-    lab2_node *del;
-
-    while(tmp->key != key){
-		parent = tmp;
-		if(tmp->key < key){
-			tmp = tmp -> right;
-		}
-		else{
+    lab2_node *child, *del, *del_p;
+    while(tmp != NULL && (tmp -> key != key)) {
+        parent = tmp;
+        if(tmp -> key < key) {
+            tmp = tmp -> right;
+        } else {
             tmp = tmp -> left;
         }
-	}
-	del = tmp;
-
-	// Case 1
-	if(tmp->left==NULL && tmp->right ==NULL){
-		if(parent->left){
-			if(tmp->key==parent->left->key){
-				parent->left=NULL; return LAB2_SUCCESS;
-			}
-		}
-		parent->right=NULL;
-		return LAB2_SUCCESS;
-		
-	}
-	// Case 2
-	else if(tmp->left!=NULL && tmp->right !=NULL){
-		tmp = tmp->left;
-		if(tmp->right ==NULL){
-				del->key = tmp->key;
-				del->left = tmp->left;
-				return LAB2_SUCCESS;
-			}
-		while(1){
-			if(tmp->right == NULL){ 
-				del->key = tmp->key;
-				parent->right = tmp->left;
-				return LAB2_SUCCESS;
-			}
-			else{
-				parent = tmp;
-				tmp= tmp->right;
-			}
-		}
-	}
-	// Case 3
-	else{
-		if(tmp->right != NULL){
-			if(parent->left->key == key){
-				parent->left =tmp->right;
-			}
-			else{
-                parent->right =tmp->right;
+    }
+    if(tmp == NULL) {
+        return LAB2_SUCCESS;
+    }
+    if((tmp -> left == NULL) && (tmp -> right == NULL)) {
+        if (parent != NULL)
+        {
+            if(parent -> left == tmp) {
+                parent -> left = NULL;
+            } else {
+                parent -> right = NULL;
             }
-			return LAB2_SUCCESS;	
-		}
-		if(tmp->left != NULL){
-			if(parent->left->key == key){
-				parent->left =tmp->left;
-			}
-			else{
-                parent->right =tmp->left;
+        } else {
+            tree -> root = NULL;
+        }
+        
+    } else if(tmp -> left == NULL || tmp -> right == NULL) {
+        child = (tmp -> left != NULL) ? tmp -> left : tmp -> right;
+        if(parent != NULL) {
+            if(parent -> left == tmp) {
+                parent -> left = child;
+            } else {
+                parent -> right = child;
             }
-			return LAB2_SUCCESS;	
-		}
-	}
+        } else {
+            tree -> root = child;
+        }
+    } else {
+        del_p = tmp;
+        del = tmp -> right;
+        while(del -> left != NULL) {
+            del_p = del;
+            del = del -> left;
+        }
+        if(del_p -> left == del) {
+            del_p -> left = del -> right;
+        } else {
+            del_p -> right = del -> right;
+        }
+        tmp -> key = del -> key;
+        tmp = del;
+    }
     lab2_node_delete(tmp);
     pthread_mutex_unlock(&mutex);
     return LAB2_SUCCESS;
