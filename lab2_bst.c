@@ -25,7 +25,7 @@
  *  @param lab2_tree *tree  : bst to print in-order.
  *  @return                 : status (success or fail)
  */
-pthread_mutex_t mutex;
+pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
 
 void inorder(lab2_tree *tree, lab2_node *C_Node){ //add inorder fuction
     if (C_Node != NULL){ //C_node is not null
@@ -51,6 +51,7 @@ int lab2_node_print_inorder(lab2_tree *tree)
 lab2_tree *lab2_tree_create() {
     lab2_tree *tree = (lab2_tree *)malloc(sizeof(lab2_tree)); //create tree by dynamic allocation
     tree->root = NULL;
+    pthread_mutex_init(&node->tree, NULL);
     return tree;
     // You need to implement lab2_tree_create function.
 }
@@ -66,6 +67,7 @@ lab2_tree *lab2_tree_create() {
 lab2_node * lab2_node_create(int key) {
     lab2_node *node = (lab2_node *)malloc(sizeof(lab2_node)); //create node by dynamic allocation
     node->key = key;
+    pthread_mutex_init(&node->mutex, NULL);
     return node;
     // You need to implement lab2_node_create function.
 }
@@ -78,34 +80,32 @@ lab2_node * lab2_node_create(int key) {
  *  @param lab2_node *new_node  : bst node which you need to insert. 
  *  @return                 : satus (success or fail)
  */
-int lab2_node_insert(lab2_tree *tree, lab2_node *new_node){
-    lab2_node *p= tree->root; //declare p
-    lab2_node *q= NULL; //declare q
-    while(p != NULL) { //To a node without child node
-        q = p;
-        if (new_node->key == (p->key)) {
-            return LAB2_ERROR;
+int lab2_node_insert(lab2_tree *tree, lab2_node *new_node) {
+    lab2_node *tmp = tree -> root;
+    if(tmp == NULL) { //if tree is NULL
+        tree -> root = new_node; // make root with new_node
+    }
+    else {
+        while(1) {
+            if(tmp -> key < new_node -> key) { // if inserting key < current key
+                if(!(tmp -> right)) { // if current's right child is NULL
+                    tmp -> right =  new_node; // Make new node at that point
+                    break;
+                }
+                else tmp = tmp -> right; // if right child not NULL, re-search to right child
+            }
+            
+            else if(tmp -> key > new_node -> key) { // if inserting key > current key
+                if(!(tmp -> left)) { // if current's left child is NULL
+                    tmp -> left = new_node; // Make new node at that point
+                    break;
+                }
+                else tmp = tmp -> left; // if left child not NULL, re-search to left child
+            }
+            else break;
         }
-        else if (new_node->key > (p->key)) { //new_node > parent node, go to right child node
-            p = p->right;
-        }
-        else { //new_node < parent node, go to left child node
-            p = p->left;
-        }
     }
-
-    if((tree->root) == NULL) { //if root is not exist
-        (tree->root) = new_node; //new_node is be a root
-    }
-    else if (new_node->key < (q->key)) { //new_node < parent node
-        q->left = new_node; //new_node be a left child
-    }
-    else { //new_node > parent node
-        q->right = new_node; //new_node be a right child
-    }
-
     return LAB2_SUCCESS;
-    // You need to implement lab2_node_insert function.
 }
 
 /* 
@@ -117,33 +117,46 @@ int lab2_node_insert(lab2_tree *tree, lab2_node *new_node){
  *  @return                     : status (success or fail)
  */
 int lab2_node_insert_fg(lab2_tree *tree, lab2_node *new_node){
-    lab2_node *p= tree->root; //declare p
-    lab2_node *q= NULL; //declare q
-    while(p != NULL) { //To a node without child node
-        q = p;
-        if (new_node->key == (p->key)) {
-            return LAB2_ERROR;
+      // You need to implement lab2_node_insert_fg function.
+    lab2_node *tmp = tree -> root;
+    if(tmp == NULL) { //if tree is NULL
+        pthread_mutex_lock(&tree -> mutex);
+        tree -> root = new_node; // make root with new_node
+        pthread_mutex_unlock(&tree -> mutex);
+    }
+    else {
+        while(1) {
+            if(tmp -> key < new_node -> key) { // if inserting key < current key
+                if(!(tmp -> right)) { // if current's right child is NULL
+                    pthread_mutex_lock(&tmp -> mutex);
+                    tmp -> right =  new_node; // Make new node at that point
+                    pthread_mutex_unlock(&tmp -> mutex);
+                    break;
+                }
+                else {
+                    pthread_mutex_lock(&tmp -> mutex);
+                    tmp = tmp -> right; // if right child not NULL, re-search to right child
+                    pthread_mutex_unlock(&tmp -> mutex);
+                }
+            }
+            
+            else if(tmp -> key > new_node -> key) { // if inserting key > current key
+                if(!(tmp -> left)) { // if current's left child is NULL
+                    pthread_mutex_lock(&tmp -> mutex);
+                    tmp -> left = new_node; // Make new node at that point
+                    pthread_mutex_unlock(&tmp -> mutex);
+                    break;
+                }
+                else{
+                    pthread_mutex_lock(&tmp -> mutex);
+                    tmp = tmp -> left; // if right left not NULL, re-search to left child
+                    pthread_mutex_unlock(&tmp -> mutex);
+                }
+            }
+            else break;
         }
-        else if (new_node->key > (p->key)) { //new_node > parent node, go to right child node
-            p = p->right;
-        }
-        else { //new_node < parent node, go to left child node
-            p = p->left;
-        }
     }
-    pthread_mutex_lock(&mutex);
-    if((tree->root) == NULL) { //if root is not exist
-        (tree->root) = new_node; //new_node is be a root
-    }
-    else if (new_node->key < (q->key)) { //new_node < parent node
-        q->left = new_node; //new_node be a left child
-    }
-    else { //new_node > parent node
-        q->right = new_node; //new_node be a right child
-    }
-    pthread_mutex_unlock(&mutex);
     return LAB2_SUCCESS;
-    // You need to implement lab2_node_insert function.
 }
 
 /* 
@@ -155,34 +168,35 @@ int lab2_node_insert_fg(lab2_tree *tree, lab2_node *new_node){
  *  @return                     : status (success or fail)
  */
 int lab2_node_insert_cg(lab2_tree *tree, lab2_node *new_node){
+    // You need to implement lab2_node_insert_cg function. // lock 걸어줌
     pthread_mutex_lock(&mutex);
-    lab2_node *p= tree->root; //declare p
-    lab2_node *q= NULL; //declare q
-    while(p != NULL) { //To a node without child node
-        q = p;
-        if (new_node->key == (p->key)) {
-            return LAB2_ERROR;
-        }
-        else if (new_node->key > (p->key)) { //new_node > parent node, go to right child node
-            p = p->right;
-        }
-        else { //new_node < parent node, go to left child node
-            p = p->left;
-        }
+    lab2_node *tmp = tree -> root;
+    if(tmp == NULL) { //if tree is NULL
+        tree -> root = new_node; // make root with new_node
     }
+    else {
+        while(1) {
+            if(tmp -> key < new_node -> key) { // if inserting key < current key
+                if(!(tmp -> right)) { // if current's right child is NULL
+                    tmp -> right =  new_node; // Make new node at that point
+                    break;
+                }
+                else tmp = tmp -> right; // if right child not NULL, re-search to right child
+            }
+            
+            else if(tmp -> key > new_node -> key) { // if inserting key > current key
+                if(!(tmp -> left)) { // if current's left child is NULL
+                    tmp -> left = new_node; // Make new node at that point
+                    break;
+                }
+                else tmp = tmp -> left; // if left child not NULL, re-search to left child
+            }
 
-    if((tree->root) == NULL) { //if root is not exist
-        (tree->root) = new_node; //new_node is be a root
-    }
-    else if (new_node->key < (q->key)) { //new_node < parent node
-        q->left = new_node; //new_node be a left child
-    }
-    else { //new_node > parent node
-        q->right = new_node; //new_node be a right child
+            else break;
+        }
     }
     pthread_mutex_unlock(&mutex);
     return LAB2_SUCCESS;
-    // You need to implement lab2_node_insert function.
 }
 
 /* 
