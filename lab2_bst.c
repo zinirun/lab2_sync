@@ -337,10 +337,11 @@ int lab2_node_remove_fg(lab2_tree *tree, int key) {
         }
     }
     else if ((p->left != NULL) && (p->right == NULL)){// only exist left child node
-        if (p == tree->root)
+        if (p == tree->root){
             pthread_mutex_lock(&tree->mutex);
             tree->root = p->left;
             pthread_mutex_unlock(&tree->mutex);
+        }
         else {
             if (p == q->left){
                 pthread_mutex_lock(&tree->mutex);
@@ -361,14 +362,16 @@ int lab2_node_remove_fg(lab2_tree *tree, int key) {
             pthread_mutex_unlock(&tree->mutex);
         }
         else {
-            if (p == q->left)
+            if (p == q->left){
                 pthread_mutex_lock(&tree->mutex);
                 q->left = p->right;
                 pthread_mutex_unlock(&tree->mutex);
-            else
+            }
+            else{
                 pthread_mutex_lock(&tree->mutex);
                 q->right = p->right;
                 pthread_mutex_unlock(&tree->mutex);
+            }
         }
     }
     else if ((p->left != NULL) && (p->right != NULL)) { // both exist right child node and left child node
