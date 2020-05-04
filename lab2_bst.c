@@ -85,13 +85,10 @@ int lab2_node_insert(lab2_tree *tree, lab2_node *new_node){
     lab2_node *q= NULL; //declare q
     while(p != NULL) { //To a node without child node
         q = p;
-        if (new_node->key == (p->key)) {
-            return LAB2_ERROR;
-        }
-        else if (new_node->key > (p->key)) { //new_node > parent node, go to right child node
+        if (new_node->key > (p->key)) { //new_node > parent node, go to right child node
             p = p->right;
         }
-        else { //new_node < parent node, go to left child node
+        else if(new_node->key < (p->key){ //new_node < parent node, go to left child node
             p = p->left;
         }
     }
