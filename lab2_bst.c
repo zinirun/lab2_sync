@@ -25,7 +25,7 @@
  *  @param lab2_tree *tree  : bst to print in-order.
  *  @return                 : status (success or fail)
  */
-pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
+pthread_mutex_t mutex;
 
 void inorder(lab2_tree *tree, lab2_node *C_Node){ //add inorder fuction
     if (C_Node != NULL){ //C_node is not null
@@ -51,7 +51,6 @@ int lab2_node_print_inorder(lab2_tree *tree)
 lab2_tree *lab2_tree_create() {
     lab2_tree *tree = (lab2_tree *)malloc(sizeof(lab2_tree)); //create tree by dynamic allocation
     tree->root = NULL;
-    pthread_mutex_init(&tree -> mutex, NULL); //create tree mutex
     return tree;
     // You need to implement lab2_tree_create function.
 }
@@ -64,12 +63,9 @@ lab2_tree *lab2_tree_create() {
  *  @param int key          : bst node's key to creates
  *  @return                 : bst node which you created in this function.
  */
-lab2_node *lab2_node_create(int key) {
+lab2_node * lab2_node_create(int key) {
     lab2_node *node = (lab2_node *)malloc(sizeof(lab2_node)); //create node by dynamic allocation
-    node -> key = key;
-    node -> left = NULL;
-    node -> right = NULL;
-    pthread_mutex_init(&node -> mutex, NULL); //create node mutex
+    node->key = key;
     return node;
     // You need to implement lab2_node_create function.
 }
@@ -83,27 +79,31 @@ lab2_node *lab2_node_create(int key) {
  *  @return                 : satus (success or fail)
  */
 int lab2_node_insert(lab2_tree *tree, lab2_node *new_node){
-    lab2_node *tmp= tree->root; //declare tmp to insert
-    if(tmp == NULL) { //To a node without child node
-    	tree -> root = new_node; //new_node = root if root NULL
-    } else{
-    	while(1){
-    		if(tmp -> key > new_node -> key){ //compare key
-    			if((tmp -> left) == NULL){ //left child which comparing is NULL
-    				tmp -> left = new_node;
-    				break;
-				}
-				tmp = tmp -> left;
-			}
-			else if(tmp -> key < new_node -> key){
-				if((tmp -> right) == NULL){ //right child which comparing is NULL
-    				tmp -> right = new_node;
-    				break;
-				}
-				tmp = tmp -> right;
-			} else break;
-		}
-	}
+    lab2_node *p= tree->root; //declare p
+    lab2_node *q= NULL; //declare q
+    while(p != NULL) { //To a node without child node
+        q = p;
+        if (new_node->key == (p->key)) {
+            return LAB2_ERROR;
+        }
+        else if (new_node->key > (p->key)) { //new_node > parent node, go to right child node
+            p = p->right;
+        }
+        else { //new_node < parent node, go to left child node
+            p = p->left;
+        }
+    }
+
+    if((tree->root) == NULL) { //if root is not exist
+        (tree->root) = new_node; //new_node is be a root
+    }
+    else if (new_node->key < (q->key)) { //new_node < parent node
+        q->left = new_node; //new_node be a left child
+    }
+    else { //new_node > parent node
+        q->right = new_node; //new_node be a right child
+    }
+
     return LAB2_SUCCESS;
     // You need to implement lab2_node_insert function.
 }
@@ -117,37 +117,31 @@ int lab2_node_insert(lab2_tree *tree, lab2_node *new_node){
  *  @return                     : status (success or fail)
  */
 int lab2_node_insert_fg(lab2_tree *tree, lab2_node *new_node){
-    lab2_node *tmp= tree->root; //declare tmp to insert
-    if(tmp == NULL) { //To a node without child node
-    	pthread_mutex_lock(&tree -> mutex);
-    	tree -> root = new_node;
-    	pthread_mutex_unlock(&tree -> mutex);
-    } else{
-    	while(1){
-    		if(tmp -> key > new_node -> key){
-    			if((tmp -> left) == NULL){
-    				pthread_mutex_lock(&tmp -> mutex);
-    				tmp -> left = new_node;
-    				pthread_mutex_unlock(&tmp -> mutex);
-    				break;
-				}
-				pthread_mutex_lock(&tmp -> mutex);
-				tmp = tmp -> left;
-				pthread_mutex_unlock(&tmp -> mutex);
-			}
-			else if(tmp -> key < new_node -> key){
-				if((tmp -> right) == NULL){
-    				pthread_mutex_lock(&tmp -> mutex);
-    				tmp -> right = new_node;
-    				pthread_mutex_unlock(&tmp -> mutex);
-    				break;
-				}
-				pthread_mutex_lock(&tmp -> mutex);
-				tmp = tmp -> right;
-				pthread_mutex_unlock(&tmp -> mutex);
-			} else break;
-		}
-	}
+    lab2_node *p= tree->root; //declare p
+    lab2_node *q= NULL; //declare q
+    while(p != NULL) { //To a node without child node
+        q = p;
+        if (new_node->key == (p->key)) {
+            return LAB2_ERROR;
+        }
+        else if (new_node->key > (p->key)) { //new_node > parent node, go to right child node
+            p = p->right;
+        }
+        else { //new_node < parent node, go to left child node
+            p = p->left;
+        }
+    }
+    pthread_mutex_lock(&mutex);
+    if((tree->root) == NULL) { //if root is not exist
+        (tree->root) = new_node; //new_node is be a root
+    }
+    else if (new_node->key < (q->key)) { //new_node < parent node
+        q->left = new_node; //new_node be a left child
+    }
+    else { //new_node > parent node
+        q->right = new_node; //new_node be a right child
+    }
+    pthread_mutex_unlock(&mutex);
     return LAB2_SUCCESS;
     // You need to implement lab2_node_insert function.
 }
@@ -162,30 +156,31 @@ int lab2_node_insert_fg(lab2_tree *tree, lab2_node *new_node){
  */
 int lab2_node_insert_cg(lab2_tree *tree, lab2_node *new_node){
     pthread_mutex_lock(&mutex);
-	lab2_node *tmp= tree->root; //declare tmp to insert
-    if(tmp == NULL) { //To a node without child node
-    	tree -> root = new_node;
-    	pthread_mutex_unlock(&mutex); //IMPORTANT to unlock
-    	return LAB2_SUCCESS;
-    } else{
-    	while(1){
-    		if(tmp -> key > new_node -> key){
-    			if((tmp -> left) == NULL){
-    				tmp -> left = new_node;
-    				break;
-				}
-				tmp = tmp -> left;
-			}
-			else if(tmp -> key < new_node -> key){
-				if((tmp -> right) == NULL){
-    				tmp -> right = new_node;
-    				break;
-				}
-				tmp = tmp -> right;
-			} else break;
-		}
-	}
-	pthread_mutex_unlock(&mutex);
+    lab2_node *p= tree->root; //declare p
+    lab2_node *q= NULL; //declare q
+    while(p != NULL) { //To a node without child node
+        q = p;
+        if (new_node->key == (p->key)) {
+            return LAB2_ERROR;
+        }
+        else if (new_node->key > (p->key)) { //new_node > parent node, go to right child node
+            p = p->right;
+        }
+        else { //new_node < parent node, go to left child node
+            p = p->left;
+        }
+    }
+
+    if((tree->root) == NULL) { //if root is not exist
+        (tree->root) = new_node; //new_node is be a root
+    }
+    else if (new_node->key < (q->key)) { //new_node < parent node
+        q->left = new_node; //new_node be a left child
+    }
+    else { //new_node > parent node
+        q->right = new_node; //new_node be a right child
+    }
+    pthread_mutex_unlock(&mutex);
     return LAB2_SUCCESS;
     // You need to implement lab2_node_insert function.
 }
@@ -387,14 +382,14 @@ int lab2_node_remove_fg(lab2_tree *tree, int key) {
  *  @return                 : status (success or fail)
  */
 int lab2_node_remove_cg(lab2_tree *tree, int key) {
-    pthread_mutex_lock(&mutex);
-	lab2_node *p = tree->root;
+    lab2_node *p = tree->root;
     lab2_node *q = NULL;
     lab2_node *tmp;
     if(p == NULL)
     {
         return LAB2_ERROR;
     }
+    pthread_mutex_lock(&mutex);
     while (1){//until node to remove
         if (key == (p->key)) //node to remove == root
             break;
@@ -481,14 +476,9 @@ int lab2_node_remove_cg(lab2_tree *tree, int key) {
  *  @param lab2_tree *tree  : bst which you want to delete. 
  *  @return                 : status(success or fail)
  */
-void lab2_tree_delete(lab2_tree *tree) {//delete tree fuction
-    lab2_node *tmp = tree -> root;
-    if(!tmp) return;
-    while(tmp) {
-        int key = tmp -> key;
-        lab2_node_remove(tree, key);
-        tmp = tree -> root;
-    }
+int lab2_tree_delete(lab2_tree *tree) {//delete tree fuction
+    free(tree);
+    tree = NULL;
     // You need to implement lab2_tree_delete function.
 }
 
@@ -500,8 +490,9 @@ void lab2_tree_delete(lab2_tree *tree) {//delete tree fuction
  *  @param lab2_tree *tree  : bst node which you want to remove. 
  *  @return                 : status(success or fail)
  */
-void lab2_node_delete(lab2_node *node) { //delete node fuction
+int lab2_node_delete(lab2_node *node) { //delete node fuction
     free(node);
     node = NULL;
     // You need to implement lab2_node_delete function.
 }
+
