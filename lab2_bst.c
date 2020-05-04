@@ -161,6 +161,7 @@ int lab2_node_insert_cg(lab2_tree *tree, lab2_node *new_node){
     while(p != NULL) { //To a node without child node
         q = p;
         if (new_node->key == (p->key)) {
+            pthread_mutex_unlock(&mutex);
             return LAB2_ERROR;
         }
         else if (new_node->key > (p->key)) { //new_node > parent node, go to right child node
