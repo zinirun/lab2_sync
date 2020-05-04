@@ -194,8 +194,6 @@ int lab2_node_insert_cg(lab2_tree *tree, lab2_node *new_node){
                 }
                 else tmp = tmp -> left; // if left child not NULL, re-search to left child
             }
-
-            else break;
         }
     }
     pthread_mutex_unlock(&mutex);
@@ -357,7 +355,7 @@ int lab2_node_remove_fg(lab2_tree *tree, int key) {
  *  @return                 : status (success or fail)
  */
 int lab2_node_remove_cg(lab2_tree *tree, int key) {
-    pthread_mutex_lock(&Mutex);
+    pthread_mutex_lock(&mutex);
     lab2_node *temp = tree -> root;
     lab2_node *parent = NULL , *child, *succ, *succ_p;
     while(temp != NULL && temp -> key != key) {
@@ -369,7 +367,7 @@ int lab2_node_remove_cg(lab2_tree *tree, int key) {
         }
     }
     if(temp == NULL) {
-        pthread_mutex_unlock(&Mutex);
+        pthread_mutex_unlock(&mutex);
         return LAB2_SUCCESS;
     }
     if((temp -> left == NULL) && (temp -> right == NULL)) { // ?꾨옒???먯떇 ?몃뱶媛 ?놁쓣 寃쎌슦
@@ -412,7 +410,7 @@ int lab2_node_remove_cg(lab2_tree *tree, int key) {
         temp = succ;
     }
     lab2_node_delete(temp);
-    pthread_mutex_unlock(&Mutex);
+    pthread_mutex_unlock(&mutex);
     return LAB2_SUCCESS;
 }
 
