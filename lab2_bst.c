@@ -51,7 +51,6 @@ int lab2_node_print_inorder(lab2_tree *tree)
 lab2_tree *lab2_tree_create() {
     lab2_tree *tree = (lab2_tree *)malloc(sizeof(lab2_tree)); //create tree by dynamic allocation
     tree->root = NULL;
-    
     pthread_mutex_init(&tree -> mutex, NULL); //create tree mutex
     return tree;
     // You need to implement lab2_tree_create function.
@@ -65,10 +64,11 @@ lab2_tree *lab2_tree_create() {
  *  @param int key          : bst node's key to creates
  *  @return                 : bst node which you created in this function.
  */
-lab2_node * lab2_node_create(int key) {
+lab2_node *lab2_node_create(int key) {
     lab2_node *node = (lab2_node *)malloc(sizeof(lab2_node)); //create node by dynamic allocation
-    node->key = key;
-    
+    node -> key = key;
+    node -> left = NULL;
+    node -> right = NULL;
     pthread_mutex_init(&node -> mutex, NULL); //create node mutex
     return node;
     // You need to implement lab2_node_create function.
@@ -93,13 +93,14 @@ int lab2_node_insert(lab2_tree *tree, lab2_node *new_node){
     				tmp -> left = new_node;
     				break;
 				}
+				tmp = tmp -> left;
 			}
 			else if(tmp -> key < new_node -> key){
 				if((tmp -> right) == NULL){ //right child which comparing is NULL
-    				tmp -> left = new_node;
+    				tmp -> right = new_node;
     				break;
 				}
-				tmp = tmp -> left;
+				tmp = tmp -> right;
 			} else break;
 		}
 	}
@@ -130,16 +131,19 @@ int lab2_node_insert_fg(lab2_tree *tree, lab2_node *new_node){
     				pthread_mutex_unlock(&tmp -> mutex);
     				break;
 				}
+				pthread_mutex_lock(&tmp -> mutex);
+				tmp = tmp -> left;
+				pthread_mutex_unlock(&tmp -> mutex);
 			}
 			else if(tmp -> key < new_node -> key){
 				if((tmp -> right) == NULL){
     				pthread_mutex_lock(&tmp -> mutex);
-    				tmp -> left = new_node;
+    				tmp -> right = new_node;
     				pthread_mutex_unlock(&tmp -> mutex);
     				break;
 				}
 				pthread_mutex_lock(&tmp -> mutex);
-				tmp = tmp -> left;
+				tmp = tmp -> right;
 				pthread_mutex_unlock(&tmp -> mutex);
 			} else break;
 		}
@@ -169,13 +173,14 @@ int lab2_node_insert_cg(lab2_tree *tree, lab2_node *new_node){
     				tmp -> left = new_node;
     				break;
 				}
+				tmp = tmp -> left
 			}
 			else if(tmp -> key < new_node -> key){
 				if((tmp -> right) == NULL){
-    				tmp -> left = new_node;
+    				tmp -> right = new_node;
     				break;
 				}
-				tmp = tmp -> left;
+				tmp = tmp -> right;
 			} else break;
 		}
 	}
