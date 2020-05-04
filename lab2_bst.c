@@ -216,8 +216,6 @@ int lab2_node_remove(lab2_tree *tree, int key){
     lab2_node* temp = tree -> root;
     lab2_node* parent = temp;
     lab2_node* del; 
-    if(root == NULL)
-        return NULL;
 
     while(temp->key != key){ //현재 노드의 키값이 제거하고자 하는 키값과 같을 때까지 반복
 		parent = temp; //부모노드를 저장한다.
@@ -300,9 +298,7 @@ int lab2_node_remove(lab2_tree *tree, int key){
 int lab2_node_remove_fg(lab2_tree *tree, int key) {
     lab2_node* temp = tree -> root;
     lab2_node* parent = temp;
-    lab2_node* del; 
-    if(root == NULL)
-        return NULL;
+    lab2_node* del;
 
     while(temp->key != key){ //현재 노드의 키값이 제거하고자 하는 키값과 같을 때까지 반복
 		parent = temp; //부모노드를 저장한다.
@@ -386,9 +382,7 @@ int lab2_node_remove_fg(lab2_tree *tree, int key) {
 int lab2_node_remove_cg(lab2_tree *tree, int key) {
     lab2_node* temp = tree -> root;
     lab2_node* parent = temp;
-    lab2_node* del; 
-    if(root == NULL)
-        return NULL;
+    lab2_node* del;
 
     while(temp->key != key){ //현재 노드의 키값이 제거하고자 하는 키값과 같을 때까지 반복
 		parent = temp; //부모노드를 저장한다.
