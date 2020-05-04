@@ -278,7 +278,6 @@ int lab2_node_remove(lab2_tree *tree, int key){
             q->left = p->left;
         }
     }
-    lab2_node_delete(tmp);
     return LAB2_SUCCESS;
     // You need to implement lab2_node_remove function.
 }
@@ -373,7 +372,6 @@ int lab2_node_remove_fg(lab2_tree *tree, int key) {
             q->left = p->left;
         }
     }
-    lab2_node_delete(tmp);
     pthread_mutex_unlock(&mutex);
     return LAB2_SUCCESS;
     // You need to implement lab2_node_remove_fg function.
@@ -469,7 +467,6 @@ int lab2_node_remove_cg(lab2_tree *tree, int key) {
             q->left = p->left;
         }
     }
-    lab2_node_delete(tmp);
     pthread_mutex_unlock(&mutex);
     return LAB2_SUCCESS;
     // You need to implement lab2_node_remove_cg function.
