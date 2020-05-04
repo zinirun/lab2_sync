@@ -367,6 +367,7 @@ int lab2_node_remove_fg(lab2_tree *tree, int key) {
             q->left = p->left;
         }
     }
+    lab2_node_delete(tmp);
     pthread_mutex_unlock(&mutex);
     return LAB2_SUCCESS;
     // You need to implement lab2_node_remove_fg function.
@@ -382,14 +383,14 @@ int lab2_node_remove_fg(lab2_tree *tree, int key) {
  *  @return                 : status (success or fail)
  */
 int lab2_node_remove_cg(lab2_tree *tree, int key) {
-    lab2_node *p = tree->root;
+    pthread_mutex_lock(&mutex);
+	lab2_node *p = tree->root;
     lab2_node *q = NULL;
     lab2_node *tmp;
     if(p == NULL)
     {
         return LAB2_ERROR;
     }
-    pthread_mutex_lock(&mutex);
     while (1){//until node to remove
         if (key == (p->key)) //node to remove == root
             break;
@@ -462,6 +463,7 @@ int lab2_node_remove_cg(lab2_tree *tree, int key) {
             q->left = p->left;
         }
     }
+    lab2_node_delete(tmp);
     pthread_mutex_unlock(&mutex);
     return LAB2_SUCCESS;
     // You need to implement lab2_node_remove_cg function.
