@@ -119,8 +119,6 @@ int lab2_node_insert_fg(lab2_tree *tree, lab2_node *new_node) { // fine-grained 
 	lab2_node *p = tree->root; // insert function is the same as above
 	lab2_node *q = NULL;
     
-    pthread_mutex_lock(&tree -> mutex);
-    pthread_mutex_lock(&new_node -> mutex);
 	while (p) {
 		q = p;
 		if (new_node->data == (p->data)) {
@@ -133,8 +131,7 @@ int lab2_node_insert_fg(lab2_tree *tree, lab2_node *new_node) { // fine-grained 
 			p = p->LL;
 		}
 	}
-    pthread_mutex_unlock(&new_node -> mutex);
-
+    pthread_mutex_lock(&tree -> mutex);
     pthread_mutex_lock(&new_node -> mutex);
 	if (!(tree->root)) {
 		(tree->root) = new_node;
