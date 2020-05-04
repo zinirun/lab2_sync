@@ -311,11 +311,9 @@ int lab2_node_remove_fg(lab2_tree *tree, int key) {
             p = p->right;
         }
     }
-    pthread_mutex_lock(&mutex);
     if ((p->left == NULL) && (p->right == NULL)){// does not exist child node
         if (p == tree->root){
             tree->root = NULL;
-            pthread_mutex_unlock(&mutex);
             return LAB2_SUCCESS;
         }
         if (p == q->left)
@@ -367,7 +365,6 @@ int lab2_node_remove_fg(lab2_tree *tree, int key) {
             q->left = p->left;
         }
     }
-    pthread_mutex_unlock(&mutex);
     return LAB2_SUCCESS;
     // You need to implement lab2_node_remove_fg function.
 }
@@ -382,19 +379,21 @@ int lab2_node_remove_fg(lab2_tree *tree, int key) {
  *  @return                 : status (success or fail)
  */
 int lab2_node_remove_cg(lab2_tree *tree, int key) {
+    pthread_mutex_lock(&mutex);
     lab2_node *p = tree->root;
     lab2_node *q = NULL;
     lab2_node *tmp;
     if(p == NULL)
     {
+        pthread_mutex_unlock(&mutex);
         return LAB2_ERROR;
     }
-    pthread_mutex_lock(&mutex);
     while (1){//until node to remove
         if (key == (p->key)) //node to remove == root
             break;
         else if (key < (p->key)){ //node to remove < parent node, go to left child node
             if (p->left == NULL){
+                pthread_mutex_unlock(&mutex);
                 return LAB2_ERROR; //does not exist will remove node
             }
             q = p;
@@ -402,6 +401,7 @@ int lab2_node_remove_cg(lab2_tree *tree, int key) {
         }
         else { //node to remove > parent node, go to right child node
             if (p->right == NULL){
+                pthread_mutex_unlock(&mutex);
                 return LAB2_ERROR; //does not exist will remove node
             }
             q = p;
@@ -411,6 +411,7 @@ int lab2_node_remove_cg(lab2_tree *tree, int key) {
     if ((p->left == NULL) && (p->right == NULL)){// does not exist child node
         if (p == tree->root){
             tree->root = NULL;
+            pthread_mutex_unlock(&mutex);
             return LAB2_SUCCESS;
         }
         if (p == q->left)
