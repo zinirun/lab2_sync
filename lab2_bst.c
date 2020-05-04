@@ -18,7 +18,7 @@
 #include <string.h>
 
 #include "lab2_sync_types.h"
-pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
+pthread_mutex_t mutex = PTHREAD_mutex_INITIALIZER;
 
 /*
  * TODO
@@ -28,7 +28,7 @@ pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
  *  @return                 : status (success or fail)
  */
 void inorder(lab2_node *node) {
-    if (C_Node != NULL){ //C_node is not null
+    if (node != NULL){ // node is not NULL
         inorder(tree, C_Node->left);
         inorder(tree, C_Node->right);
     }
@@ -340,7 +340,7 @@ int lab2_node_remove_fg(lab2_tree *tree, int key) {
  *  @return                 : status (success or fail)
  */
 int lab2_node_remove_cg(lab2_tree *tree, int key) {
-    pthread_mutex_lock(&Mutex);
+    pthread_mutex_lock(&mutex);
     lab2_node *tmp = tree -> root;
     lab2_node *parent = NULL , *child, *succ, *succ_p;
     while(tmp != NULL && tmp -> key != key) {
@@ -352,7 +352,7 @@ int lab2_node_remove_cg(lab2_tree *tree, int key) {
         }
     }
     if(tmp == NULL) {
-        pthread_mutex_unlock(&Mutex);
+        pthread_mutex_unlock(&mutex);
         return LAB2_SUCCESS;
     }
     if((tmp -> left == NULL) && (tmp -> right == NULL)) { // 아래에 자식 노드가 없을 경우
@@ -395,7 +395,7 @@ int lab2_node_remove_cg(lab2_tree *tree, int key) {
         tmp = succ;
     }
     lab2_node_delete(tmp);
-    pthread_mutex_unlock(&Mutex);
+    pthread_mutex_unlock(&mutex);
     return LAB2_SUCCESS;
 }
 
