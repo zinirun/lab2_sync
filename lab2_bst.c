@@ -338,27 +338,41 @@ int lab2_node_remove_fg(lab2_tree *tree, int key) {
     }
     else if ((p->left != NULL) && (p->right == NULL)){// only exist left child node
         if (p == tree->root)
+            pthread_mutex_lock(&tree->mutex);
             tree->root = p->left;
+            pthread_mutex_unlock(&tree->mutex);
         else {
-            if (p == q->left)
+            if (p == q->left){
+                pthread_mutex_lock(&tree->mutex);
                 q->left = p->left;
-            else
+                pthread_mutex_unlock(&tree->mutex);
+            }
+            else{
+                pthread_mutex_lock(&tree->mutex);
                 q->right = p->left;
+                pthread_mutex_unlock(&tree->mutex);
+            }
         }
-        //pthread_mutex_unlock(&tree->mutex);
     }
     else if ((p->left == NULL) && (p->right != NULL)){// only exist right child node
-        if (p == tree->root)
+        if (p == tree->root){
+            pthread_mutex_lock(&tree->mutex);
             tree->root = p->right;
+            pthread_mutex_unlock(&tree->mutex);
+        }
         else {
             if (p == q->left)
+                pthread_mutex_lock(&tree->mutex);
                 q->left = p->right;
+                pthread_mutex_unlock(&tree->mutex);
             else
+                pthread_mutex_lock(&tree->mutex);
                 q->right = p->right;
+                pthread_mutex_unlock(&tree->mutex);
         }
-        //pthread_mutex_unlock(&tree->mutex);
     }
     else if ((p->left != NULL) && (p->right != NULL)) { // both exist right child node and left child node
+        pthread_mutex_lock(&tree->mutex);
         q = p;
         p = p->left;
         tmp = p;
@@ -381,7 +395,7 @@ int lab2_node_remove_fg(lab2_tree *tree, int key) {
         else {
             q->left = p->left;
         }
-        //pthread_mutex_unlock(&tree->mutex);
+        pthread_mutex_unlock(&tree->mutex);
     }
     return LAB2_SUCCESS;
     // You need to implement lab2_node_remove_fg function.
