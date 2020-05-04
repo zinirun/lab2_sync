@@ -380,7 +380,7 @@ int lab2_node_remove_fg(lab2_tree *tree, int key) {
         pthread_mutex_unlock(&tree->mutex);
     }
     pthread_mutex_lock(&tree->mutex);
-    lab2_node_delete(temp);
+    lab2_node_delete(tmp);
     pthread_mutex_unlock(&tree->mutex);
     return LAB2_SUCCESS;
     // You need to implement lab2_node_remove_fg function.
