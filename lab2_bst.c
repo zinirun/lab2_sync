@@ -141,10 +141,12 @@ int lab2_node_insert_fg(lab2_tree *tree, lab2_node *new_node) { // fine-grained 
 	else if (new_node->data < (q->data)) {
 		q->LL = new_node;
         pthread_mutex_unlock(&new_node -> mutex);
+        pthread_mutex_unlock(&tree -> mutex);
 	}
 	else {
 		q->RL = new_node;
         pthread_mutex_unlock(&new_node -> mutex);
+        pthread_mutex_unlock(&tree -> mutex);
 	}
     
 	return LAB2_SUCCESS;
