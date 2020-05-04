@@ -173,7 +173,7 @@ int lab2_node_insert_cg(lab2_tree *tree, lab2_node *new_node){
     				tmp -> left = new_node;
     				break;
 				}
-				tmp = tmp -> left
+				tmp = tmp -> left;
 			}
 			else if(tmp -> key < new_node -> key){
 				if((tmp -> right) == NULL){
