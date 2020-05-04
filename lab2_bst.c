@@ -29,8 +29,8 @@ pthread_mutex_t mutex = PTHREAD_mutex_INITIALIZER;
  */
 void inorder(lab2_node *node) {
     if (node != NULL){ // node is not NULL
-        inorder(tree, node->left);
-        inorder(tree, node->right);
+        inorder(node->left);
+        inorder(node->right);
     }
 }
 int lab2_node_print_inorder(lab2_tree * tree) {
