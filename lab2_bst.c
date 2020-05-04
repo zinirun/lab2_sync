@@ -80,29 +80,29 @@ lab2_node * lab2_node_create(int key){ // create node function
  *  @param lab2_node *new_node  : bst node which you need to insert. 
  *  @return                 : satus (success or fail)
  */
-int lab2_node_insert(lab2_tree *tree, lab2_node *new1){ // insert node function (lock X)
+int lab2_node_insert(lab2_tree *tree, lab2_node *new_node){ // insert node function (lock X)
 	lab2_node *p = tree->root; // delcare p and q to follow each other
 	lab2_node *q = NULL;
 	while (p) { // until follow the node that has no child node(find the input location)
 		q = p;
-		if (new1->data == (p->data)) { // if exist smae node, create error signal
+		if (new_node->data == (p->data)) { // if exist smae node, create error signal
 			return LAB2_ERROR;
 		}
-		else if (new1->data > (p->data)) { // if bigger than parent node, go to rightchild
+		else if (new_node->data > (p->data)) { // if bigger than parent node, go to rightchild
 			p = p->RL;
 		}
 		else { // if smaller than parent node, go to leftchild
 			p = p->LL;
 		}
 	}
-	if (!(tree->root)) { // if tree is empty, new1 is be a root
-		(tree->root) = new1;
+	if (!(tree->root)) { // if tree is empty, new_node is be a root
+		(tree->root) = new_node;
 	}
-	else if (new1->data < (q->data)) { // if smaller than parent node, it is be a leftchild
-		q->LL = new1;
+	else if (new_node->data < (q->data)) { // if smaller than parent node, it is be a leftchild
+		q->LL = new_node;
 	}
 	else { // if bigger than parent node, it is be a rightchild
-		q->RL = new1;
+		q->RL = new_node;
 	}
 	return LAB2_SUCCESS;
 }
@@ -115,33 +115,39 @@ int lab2_node_insert(lab2_tree *tree, lab2_node *new1){ // insert node function 
  *  @param lab2_node *new_node  : bst node which you need to insert. 
  *  @return                     : status (success or fail)
  */
-int lab2_node_insert_fg(lab2_tree *tree, lab2_node *new1) { // fine-grained node insert function
+int lab2_node_insert_fg(lab2_tree *tree, lab2_node *new_node) { // fine-grained node insert function
 	lab2_node *p = tree->root; // insert function is the same as above
 	lab2_node *q = NULL;
+    
+    pthread_mutex_lock(&tree -> mutex);
+    pthread_mutex_lock(&new_node -> mutex);
 	while (p) {
 		q = p;
-		if (new1->data == (p->data)) {
+		if (new_node->data == (p->data)) {
 			return LAB2_ERROR;
 		}
-		else if (new1->data > (p->data)) {
+		else if (new_node->data > (p->data)) {
 			p = p->RL;
 		}
 		else {
 			p = p->LL;
 		}
 	}
+    pthread_mutex_unlock(&new_node -> mutex);
 
-	pthread_mutex_lock(&lock);   //locking
+    pthread_mutex_lock(&new_node -> mutex);
 	if (!(tree->root)) {
-		(tree->root) = new1;
+		(tree->root) = new_node;
 	}
-	else if (new1->data < (q->data)) {
-		q->LL = new1;
+	else if (new_node->data < (q->data)) {
+		q->LL = new_node;
 	}
 	else {
-		q->RL = new1;
+		q->RL = new_node;
 	}
-	pthread_mutex_unlock(&lock); // unlocking
+    pthread_mutex_unlock(&new_node -> mutex);
+    pthread_mutex_unlock(&tree->mutex);
+    
 	return LAB2_SUCCESS;
 }
 
@@ -153,17 +159,17 @@ int lab2_node_insert_fg(lab2_tree *tree, lab2_node *new1) { // fine-grained node
  *  @param lab2_node *new_node  : bst node which you need to insert. 
  *  @return                     : status (success or fail)
  */
-int lab2_node_insert_cg(lab2_tree *tree, lab2_node *new1) { // coarse-grained node insert function
+int lab2_node_insert_cg(lab2_tree *tree, lab2_node *new_node) { // coarse-grained node insert function
 	pthread_mutex_lock(&lock); // locking
 	lab2_node *p = tree->root; // insert function is the same as above
 	lab2_node *q = NULL;
 	while (p) {
 		q = p;
-		if (new1->data == (p->data)) {
+		if (new_node->data == (p->data)) {
 			pthread_mutex_unlock(&lock); // uncloking
 			return LAB2_ERROR;
 		}
-		else if (new1->data > (p->data)) {
+		else if (new_node->data > (p->data)) {
 			p = p->RL;
 		}
 		else {
@@ -171,13 +177,13 @@ int lab2_node_insert_cg(lab2_tree *tree, lab2_node *new1) { // coarse-grained no
 		}
 	}
 	if (!(tree->root)) {
-		(tree->root) = new1;
+		(tree->root) = new_node;
 	}
-	else if (new1->data < (q->data)) {
-		q->LL = new1;
+	else if (new_node->data < (q->data)) {
+		q->LL = new_node;
 	}
 	else {
-		q->RL = new1;
+		q->RL = new_node;
 	}
 	pthread_mutex_unlock(&lock); // unlocking
 	return LAB2_SUCCESS;
