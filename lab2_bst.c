@@ -166,6 +166,7 @@ int lab2_node_insert_cg(lab2_tree *tree, lab2_node *new_node){
     if(tmp == NULL) { //To a node without child node
     	tree -> root = new_node;
     	pthread_mutex_unlock(&mutex); //IMPORTANT to unlock
+    	return LAB2_SUCCESS;
     } else{
     	while(1){
     		if(tmp -> key > new_node -> key){
